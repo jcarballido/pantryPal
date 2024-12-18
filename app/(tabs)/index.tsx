@@ -20,19 +20,17 @@ export default function index() {
           <Text className='text-black '>Search All</Text>
         </Pressable>
       </View>
-      <View className='flex-1 flex-col border-2 border-red-900'>
         <ScrollView horizontal={true} className='flex-1 flex-row justify-between border-2 border-blue-300 max-h-max p-4 bg-amber-200'>
           { categories.map( (category, index) => {
             return(
-              <Pressable key={ index } className='mx-2 bg-gray-300 drop-shadow-xl rounded-xl'>
+              <Pressable key={ index } className='mx-2 bg-gray-300 drop-shadow-xl rounded-xl' onPress={()=>setSelectedCategory(category)}>
                 <Text className='m-1'>{ category }</Text>
               </Pressable> 
             )
           })}
         </ScrollView>
-      </View>
-      <View>
-        <CategoryItems category={selectedCategory} />
+      <View className='flex-1 flex-col'>
+        <CategoryItems category={selectedCategory} classname='flex-1 flex-col border-red-700 border-2' />
       </View>
     </View>
   )
