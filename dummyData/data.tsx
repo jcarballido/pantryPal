@@ -1,13 +1,7 @@
 import 'react-native-get-random-values'
 import { nanoid } from 'nanoid'
+import { ItemData } from '@/sharedTypes/ItemType';
 
-interface ItemData {
-  name: string;
-  id: string;
-  amount: string | number;
-  category:string;
-  [key: string]:string | number;
-}
 
 const data:ItemData[] = [
   {name:'Milk', id: nanoid(10), amount:'Full',purchased:'11-12-2024',opened:'11-15-2024', expires:'11-19-2024',category:'Category C'},
