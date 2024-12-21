@@ -10,6 +10,8 @@ export default function index() {
 
   const [ selectedCategory, setSelectedCategory ] = useState(categories[0])
 
+
+
   return (
     <View className='flex-1 flex-col border-2 border-green-400 ' >
       <View className='flex-1 flex-row max-h-max justify-between border-2 border-blue-700 m-4'>
@@ -23,7 +25,7 @@ export default function index() {
         <ScrollView horizontal={true} className='flex-1 flex-row justify-between border-2 border-blue-300 max-h-max p-4 bg-amber-200'>
           { categories.map( (category, index) => {
             return(
-              <Pressable key={ index } className='mx-2 bg-gray-300 drop-shadow-xl rounded-xl' onPress={()=>setSelectedCategory(category)}>
+              <Pressable key={ index } className={`mx-2  drop-shadow-xl rounded-xl ${category == selectedCategory? 'bg-blue-400':'bg-gray-300'}`} onPress={()=>setSelectedCategory(category)}>
                 <Text className='m-1'>{ category }</Text>
               </Pressable> 
             )

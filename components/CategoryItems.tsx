@@ -9,12 +9,12 @@ interface CategoryItemProps {
   classname: string
 }
 
-export default function CategoryItems({ category,classname }:CategoryItemProps) {
+export default function CategoryItems(props:CategoryItemProps) {
 
-  const selectedCategory = data.filter(item => item.category === category)
+  const selectedCategory = data.filter(item => item.category === props.category)
   
   return (
-    <View className={classname}>
+    <View className={props.classname}>
       <CategorySearch />
       <FlatList
         data={selectedCategory}
