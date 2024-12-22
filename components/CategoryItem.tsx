@@ -24,9 +24,13 @@ export default function CategoryItem(props: CategoryItemProps) {
           <Text>{name}</Text>
           <Text>{id}</Text>
           <Text>{amount}</Text>
-          <Pressable onPress={()=>setShow(previousShow => {return {status:!previousShow.status}})} > 
-            <Text>DFKJAs</Text>
-          </Pressable>
+          {
+            Object.keys(rest).length > 0
+            ? <Pressable onPress={()=>setShow(previousShow => {return {status:!previousShow.status}})} > 
+                <Text>Details</Text>
+              </Pressable>
+            : null
+          }
         </View>
         { show.status && descriptors.map( descriptor => {
           return(

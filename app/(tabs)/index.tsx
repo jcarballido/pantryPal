@@ -13,19 +13,19 @@ export default function index() {
 
 
   return (
-    <View className='flex-1 flex-col border-2 border-green-400 ' >
-      <View className='flex-1 flex-row max-h-max justify-between border-2 border-blue-700 m-4'>
-        <Pressable className='bg-purple-700 max-w-max rounded-xl'>
-          <Text className='text-zinc-200'>+ Add Item</Text>
+    <View className='flex-1 flex-col border-2 bg-primary-base ' >
+      <View className='flex-1 flex-row max-h-max justify-between m-4'>
+        <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center'>
+          <Text className='text-zinc-200 '>Add Item</Text>
         </Pressable>
-        <Pressable className='max-w-max bg-blue-600 rounded-xl'>
+        <Pressable className='max-w-max bg-secondary-action-base rounded-xl min-w-12 min-h-12 p-2.5 flex flex-row items-center '>
           <Text className='text-black '>Search All</Text>
         </Pressable>
       </View>
-        <ScrollView horizontal={true} className='flex-1 flex-row justify-between border-2 border-blue-300 max-h-max p-4 bg-amber-200'>
+        <ScrollView horizontal={true} className='flex-1 flex-row justify-between max-h-max p-4 gap-2'>
           { categories.map( (category, index) => {
             return(
-              <Pressable key={ index } className={`mx-2  drop-shadow-xl rounded-xl ${category == selectedCategory? 'bg-blue-400':'bg-gray-300'}`} onPress={()=>setSelectedCategory(category)}>
+              <Pressable key={ index } className={`mx-2 min-w-12 min-h-12 rounded-xl ${category == selectedCategory? 'bg-tertiary-action-active drop-shadow-xl':'bg-tertiary-action-base'} flex flex-row items-center px-2`} onPress={()=>setSelectedCategory(category)}>
                 <Text className='m-1'>{ category }</Text>
               </Pressable> 
             )
