@@ -2,6 +2,8 @@ import { View, Text, Pressable, FlatList, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import data from '../../dummyData/data'
 import CategoryItems from '@/components/CategoryItems'
+import { getTabBarHeight } from '@react-navigation/bottom-tabs/lib/typescript/commonjs/src/views/BottomTabBar'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 export default function index() {
 
@@ -9,7 +11,8 @@ export default function index() {
   categories.sort((a,b) => a.localeCompare(b))
 
   const [ selectedCategory, setSelectedCategory ] = useState(categories[0])
-
+  // const tabBarHeight = `mb-[${useBottomTabBarHeight()}]`
+  const barHeight = useBottomTabBarHeight()
 
 
   return (
@@ -31,8 +34,8 @@ export default function index() {
             )
           })}
         </ScrollView>
-      <View className='flex-1 flex-col'>
-        <CategoryItems category={selectedCategory} classname='flex-1 flex-col border-red-700 border-2' />
+      <View style={{paddingBottom:barHeight}} className={`flex-1 flex-col`}>
+        <CategoryItems category={selectedCategory} classname='flex-1 flex-col' />
       </View>
     </View>
   )

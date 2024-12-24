@@ -20,7 +20,8 @@ module.exports = {
         'tertiary-action':{
           'base':'#86C1B9',
           'active':'#5A9D93'
-        }
+        },
+        'dark-charcoal-gray':'#333333'
       }
     },
   },
