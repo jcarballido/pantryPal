@@ -24,7 +24,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor:'#505050',
         tabBarItemStyle:{
           marginHorizontal:8,
-          marginVertical:'auto'
+          marginVertical:'auto',
         },
         tabBarLabelPosition:'below-icon',
         tabBarShowLabel: false
@@ -34,28 +34,28 @@ export default function TabsLayout() {
         headerShown: false, 
         title: 'Categories',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="category" size={24} color={color} />         
+          <MaterialIcons name="category" size={focused? 30:24} color={color} style={focused? {padding:4,backgroundColor:'#E0E4E8',borderRadius:999}:{}}/>         
         )
         }}
        />
       <Tabs.Screen name='search' options={{ 
         title: 'Search',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="search" size={24} color={color} />         
+          <MaterialIcons name="search" size={focused? 30:24} color={color} style={focused? {padding:4,backgroundColor:'#E0E4E8',borderRadius:999}:{}} />         
         )
        }} 
       />
       <Tabs.Screen name='list' options={{ 
         title: 'Shopping List',
         tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="format-list-bulleted" size={24} color={color} />         
+          <MaterialIcons name="format-list-bulleted" size={focused? 30:24} color={color}  style={focused? {padding:4,backgroundColor:'#E0E4E8',borderRadius:999}:{}}/>         
         )
         }} 
       />
       <Tabs.Screen name='account' options={{
          title: 'Account',
          tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="account-circle" size={24} color={color} />         
+          <MaterialIcons name="account-circle" size={focused? 30:24} color={color} style={focused? {padding:4,backgroundColor:'#E0E4E8',borderRadius:999}:{}}/>         
         ) 
         }} 
       />

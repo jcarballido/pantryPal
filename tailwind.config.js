@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{js,jsx,ts,tsx}"],
+  content: ["./app/**/*.{js,jsx,ts,tsx}","./components/**/*"],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
@@ -21,7 +21,9 @@ module.exports = {
           'base':'#86C1B9',
           'active':'#5A9D93'
         },
-        'dark-charcoal-gray':'#333333'
+        'dark-charcoal-gray':'#333333',
+        'light-cool-gray':'#E5E5E5',
+        'charcoal-gray':'#505050'
       }
     },
   },

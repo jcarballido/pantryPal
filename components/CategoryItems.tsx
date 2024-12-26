@@ -15,7 +15,6 @@ export default function CategoryItems(props:CategoryItemProps) {
   
   return (
     <View className={props.classname}>
-      <CategorySearch />
       <FlatList
         data={selectedCategory}
         keyExtractor={(item) => item.id}
@@ -24,6 +23,7 @@ export default function CategoryItems(props:CategoryItemProps) {
             <CategoryItem item={ item } />
           )
         }}
+        className='flex flex-col'
       />
     </View>
   )
