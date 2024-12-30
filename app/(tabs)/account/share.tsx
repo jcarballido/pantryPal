@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function account() {
+export default function share() {
   return (
     <View>
-      <Text>account</Text>
+      <Text>share</Text>
     </View>
   )
 }

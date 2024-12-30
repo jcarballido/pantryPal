@@ -1,9 +1,12 @@
 import { View, Text, TouchableWithoutFeedback } from 'react-native'
 import React from 'react'
-import { Tabs } from 'expo-router'
+import { Tabs, useRouter } from 'expo-router'
 // import { Tabs, TabList, TabTrigger, TabSlot } from 'expo-router/ui'
 import MaterialIcons  from '@expo/vector-icons/MaterialIcons'
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs'
+import { createStackNavigator } from '@react-navigation/stack'
+import Test1 from '../../components/Test1'
+import Test2 from '../../components/Test2'
 
 const CustomTabBarButton = (props: BottomTabBarButtonProps) => {
   const { onPress, onLongPress, accessibilityRole, accessibilityState, style, children, android_ripple } = props;
@@ -22,7 +25,7 @@ const CustomTabBarButton = (props: BottomTabBarButtonProps) => {
 
 export default function TabsLayout() {
 
-  
+  const Stack = createStackNavigator()
 
   return (
     <Tabs screenOptions={
@@ -82,10 +85,12 @@ export default function TabsLayout() {
       <Tabs.Screen name='account' options={{
          title: 'Account',
          tabBarIcon: ({ focused, color, size }) => (
-          <MaterialIcons name="account-circle" size={size} color={color} style={focused? {backgroundColor:'#E0E4E8', borderRadius:999}:{}}/>         
+          <MaterialIcons name="account-circle" size={24} color={color} style={focused? {backgroundColor:'#E0E4E8', borderRadius:999}:{}}/>         
         ) 
         }} 
       />
+      
+
     </Tabs>
   )
 }
