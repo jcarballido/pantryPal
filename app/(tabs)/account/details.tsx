@@ -1,16 +1,32 @@
 import { View, Text } from 'react-native'
 import React from 'react'
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { ItemData } from '@/sharedTypes/ItemType'
 
-export default function details() {
 
-  const router = useRouter()
-  const params = useLocalSearchParams()
+interface DetailsProps{
+  itemDataArray: ItemData[]
+}
 
+export default function details(props: DetailsProps) {
+
+  const bottomTabBarHeight = useBottomTabBarHeight()
+
+  const details: string[] = ['test1', 'test2'] 
+  
   return (
-    <View>
-
-      <Text>details</Text>
+    <View className='bg-[#F8F4EB] flex-1 items-center pt-10 px-[20]'>
+      <View style={{ marginBottom:bottomTabBarHeight + 15 }} className='rounded-xl w-full gap-[20] bg-[#E3E8EC]'>
+        { 
+          details.map( item => {
+            return(
+              <View>
+                <Text>Test</Text>
+              </View>
+            )
+          } 
+        )}
+      </View>     
     </View>
   )
 }

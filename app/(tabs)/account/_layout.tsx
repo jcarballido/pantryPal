@@ -1,17 +1,18 @@
-import { View, Text } from 'react-native'
+import { View, Text, Button, Pressable } from 'react-native'
 import React from 'react'
-import { Stack } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 
 export default function AccountStack() {
   return (
-    <Stack screenOptions={{
-      headerTransparent: true,
-      headerBackVisible:true
-    }} >
-      <Stack.Screen name='index' />
-      <Stack.Screen name='changePassword' />
-      <Stack.Screen name='details' options={{title:'Detalles'}}/>
-      <Stack.Screen name='share' />
+    <Stack
+      screenOptions={{
+        headerStyle:{ backgroundColor:'#F8F4EB' },
+      }}
+    >
+      <Stack.Screen name='index' options={{headerShown:false}}/>
+      <Stack.Screen name='changePassword' options={{ headerTitle:'Change Password' }}/>
+      <Stack.Screen name='details' options={{ headerTitle:'Details' }}/>
+      <Stack.Screen name='share' options={{ headerTitle:'Share Inventory' }} />
     </Stack>
   )
 }

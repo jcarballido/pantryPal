@@ -1,11 +1,9 @@
-import { View, Text, Pressable, FlatList, ScrollView, StatusBar } from 'react-native'
+import { View, Text, Pressable, ScrollView, StatusBar } from 'react-native'
 import React, { useState } from 'react'
 import data from '../../dummyData/data'
 import CategoryItems from '@/components/CategoryItems'
-import { getTabBarHeight } from '@react-navigation/bottom-tabs/lib/typescript/commonjs/src/views/BottomTabBar'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import CategorySearch from '@/components/CategorySearch'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function index() {
 
@@ -13,9 +11,7 @@ export default function index() {
   categories.sort((a,b) => a.localeCompare(b))
 
   const [ selectedCategory, setSelectedCategory ] = useState(categories[0])
-  // const tabBarHeight = `mb-[${useBottomTabBarHeight()}]`
   const barHeight = useBottomTabBarHeight()
-
 
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
