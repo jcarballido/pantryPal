@@ -8,9 +8,9 @@ const initializeDB =  async (db: SQLiteDatabase) => {
   try{
     await db.execAsync(`
     PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
+    CREATE TABLE IF NOT EXISTS item (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
     `);
-    console.log('DB initialize')
+    console.log('DB initialized')
   }catch(e){
     console.log('Error initializing:', e)
   }
