@@ -33,7 +33,7 @@ export default function index() {
           <Text className='text-black '>Search All</Text>
         </Pressable>
       </View>
-      <ScrollView horizontal={true} className='flex-grow-0 flex-row p-2 gap-4'>
+      <ScrollView horizontal={true} className='flex-grow-0 flex-row p-2 gap-4 border-2 border-secondary-action-active mx-1 rounded-lg'>
         { categories.map( (category, index) => {
           return(
             <Pressable key={ index } className={`min-w-12 min-h-[44] rounded-xl ${category == selectedCategory? 'bg-tertiary-action-active drop-shadow-xl':'bg-tertiary-action-base'} flex-0 flex-row h-max items-center px-2 mr-2`} onPress={()=>setSelectedCategory(category)}>
