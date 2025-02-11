@@ -5,3 +5,8 @@ export interface ItemData {
   category:string;
   [key: string]:string | number;
 }
+
+export interface ItemDataProto {
+  id:string;
+  value:ItemData;
+}

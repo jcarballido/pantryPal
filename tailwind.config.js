@@ -6,17 +6,19 @@ module.exports = {
     extend: {
       colors: {
         'primary':{
-          'base':'#CEEADC',
+          'base':'#E0F7FA',
           'light':'#EDF7F2'
         },
+        'text':'#263238',
         'primary-action':{
-          'base':'#4682B4',
+          'base':'#00B8D4',
           'active':'#757D85'
         },
         'secondary-action':{
-          'base':'#E0E4E8',
+          'base':'#0277BD',
           'active':'#667380'
         },
+        'accent':'#84FFFF',
         'tertiary-action':{
           'base':'#86C1B9',
           'active':'#5A9D93'

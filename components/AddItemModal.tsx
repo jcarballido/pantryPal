@@ -1,24 +1,45 @@
-import { View, Text, Modal, Pressable, ScrollView, TextInput, LayoutChangeEvent } from 'react-native'
-import React, { useState } from 'react'
-import ItemNameInput from './ItemNameInput'
-import CategoryInput from './CategoryInput'
-import AmountInput from './AmountInput'
-import AdditionalDescriptorsInput from './AdditionalDescriptorsInput'
+import { View, Text, Modal, Pressable, ScrollView, Button, LayoutChangeEvent } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import RequiredInput from './RequiredInput'
+import AddAdditionalInput from './AddAdditionalInput'
+import AdditionalInput from './AdditionalInput'
+import { useForm, Controller, SubmitHandler } from 'react-hook-form'
+import { Picker } from '@react-native-picker/picker'
+import DropdownInput from './DropdownInput'
+import { useSQLiteContext } from 'expo-sqlite'
 
 type Props = {
   visible:{
     status: boolean
   },
-  setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>
+  setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>,
+  // setSuccessfulSubmission: boolean
 }
 
+interface FormData {
+  name:string;
+  category:string;
+  amount:string;
+  [key: string] : string
+}
 
 export default function AddItemModal({ visible, setVisible }:Props) {
 
-  const [calculatedWidth, setCalculatedWidth] = useState<number|undefined>(undefined)
-  const [ additionalDetails, setAdditionalDetails] = useState<string[]>([])
+  const requiredInputNames = [ 'name','category','amount' ]
+
+  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
+  const inputValues = watch()
+
+  const db = useSQLiteContext()
+
+  const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
+  const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
+  // const [ newDetail, setNewDetail ] = useState('')
   const [ newDetailName, setNewDetailName ] = useState('')
-  const [ newDetail, setNewDetail] = useState('')
+  // const [ requiredFieldState, setRequiredFieldState ] = useState<{allTouched: boolean, anyEmptyRequiredFields:boolean}>({allTouched:false, anyEmptyRequiredFields:true})
+  // const [ allTouched, setAllTouched ] = useState<boolean>(false)
+  const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
+  const [selectedLanguage, setSelectedLanguage] = useState();
 
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -34,68 +55,121 @@ export default function AddItemModal({ visible, setVisible }:Props) {
     })
   } 
 
+  const onSubmit: SubmitHandler<FormData> = async(data) => {
+    console.log('Data:', data)
+    const dataString = JSON.stringify(data) 
+    try{
+      await db.runAsync('INSERT INTO item(value) VALUES(?)',dataString)
+ 
+    }catch(e){
+      console.log('Error inserting data:', e)
+    }
+    const allRows = db.getAllSync('SELECT * FROM item');
+    for (const row of allRows) {
+      console.log(row);
+    }
+    reset()
+  }
 
   const calculateWidth = ( event: LayoutChangeEvent ) => {
     const { width } = event.nativeEvent.layout
-    console.log('Width:',' ',`w-[${Math.ceil(width)}]`)
     setCalculatedWidth(Math.ceil(width))
+    return
   }
+  
+  useEffect(() => {
+    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
+    setRequiredFieldsEmpty(areRequiredFieldsEmpty)
+  },[inputValues])
 
   return (
-    <Modal visible={ visible.status } onRequestClose={() => setVisible({status:false})}  >
-      <ScrollView className='flex-1 flex-col bg-primary-light-base'>
-        <View className='flex-1 flex-row items-center justify-center'>
-          <View className='flex-1 flex-row justify-center pt-10'>
-            <Text className='text-2xl'>Add New Item</Text>
-          </View>
-          <Pressable onPress={() => setVisible({status:false})} className='absolute right-0 mr-7 top-10'>
-            <Text className='text-2xl'>X</Text>
-          </Pressable>
-        </View>
+    <Modal visible={ visible.status } onRequestClose={() => {
+      setVisible({status:false})
+      reset()
+      }  
+    }>
+      <View className='flex-row justify-center pt-10'>
+        <Text className='text-2xl '>Add New Item</Text>   
+      </View>
+      <ScrollView className='flex-1 flex-col bg-primary-light-base font-bold mb-4'>
         <View className='flex flex-col p-3'>
-          <View className='flex-row items-center flex-1' >
-            <Text style={{width:calculatedWidth}}>
-              Name
-            </Text>
-            <TextInput placeholder='Name Placeholder'/>
-          </View>
-          <View className='flex-row items-center'>
-            <Text style={{width:calculatedWidth}} onLayout={calculateWidth} >
-              Category
-            </Text>
-            <TextInput placeholder='Category Placeholder'/>
-          </View>
-          <View className='flex-row items-center'>
-            <Text style={{width:calculatedWidth}}>
-              Amount
-            </Text>
-            <TextInput placeholder='Amount Placeholder'/>
-          </View>
-          <Text className='font-extrabold mt-5'>Additional Details</Text>
+          <Controller
+            name='name'
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={( { field:{ onChange, onBlur, value }} ) => (
+              <RequiredInput label='Name' placeholderText='Milk, Eggs, Paper Towels' allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
+            ) }
+          />
+          { touchedFields.name && (inputValues['name'] === '' || inputValues['name'] === undefined) && <Text>Name is a required field.</Text> }
+          <Controller
+            name='category'
+            control={control}
+            rules={{
+              required: true
+            }}
+            render={ ({field:{ value, onChange }}) => (
+              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} />
+            )}
+          />
+          { inputValues['category'] === 'New Category' && 
+            <Controller
+              name='newCategory'
+              control={control}
+              rules={{
+                required: true
+              }}
+              render={( { field:{ onChange, onBlur, value }} ) => (
+                <RequiredInput label='New Category' allowableWidth={calculatedWidth} placeholderText='Category A, Fridge, Left Cabinet Above Sink' onChange={onChange} onBlur={onBlur} value={value} />
+              ) }
+            />}
+          { (inputValues['category'] === 'New Category' && touchedFields.newCategory && (inputValues['newCategory']) === '' || (inputValues['category'] === 'New Category' && touchedFields.newCategory && inputValues['newCategory'] === undefined)) && <Text>Category is a required field.</Text> }
+          <Controller
+            name='amount'
+            control={control}
+            rules={{
+              required: true
+            }}
+            render={( { field:{ onChange, onBlur, value }} ) => (
+              <RequiredInput label='Amount' placeholderText='100%, 3/4, Almost empty, 12oz.' allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
+            ) }
+          />
+          { touchedFields.amount && (inputValues['amount'] === '' || inputValues['amount'] === undefined) && <Text>Amount is a required field.</Text> }
+          <Text className='text-xl mt-5 mb-4'>Additional Details</Text>
           {
             additionalDetails.map( detail => {
               return(
-                <View className='flex-row items-center'>
-                  <Text style={{width:calculatedWidth}} className=''>{ detail }</Text>
-                  <TextInput placeholder='Detail (e.g. 10/11/1900, Target, 3.99)' onChangeText={setNewDetail} className='flex-1'/>
-                  <Pressable onPress={()=>handleNewDetailRemoval(detail)} className=''>
-                    <Text className='w-full flex-1'>
-                      X
-                    </Text>
-                  </Pressable>
-                </View>
+                <Controller
+                name={`${detail}`}
+                control={control}
+                render={( { field:{ onChange, onBlur, value }} ) => (
+                  <AdditionalInput detail={detail} handleNewDetailRemoval={handleNewDetailRemoval} allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
+                ) }
+              />
               )
             })
           }
-          <View className={`flex-row items-center ${additionalDetails.length > 0? 'mt-3':'mt-0'}`}>
-            <Text style={ {width:calculatedWidth} }  className='flex-wrap flex-0'>New Detail</Text>
-            <TextInput className='flex-1 flex-wrap mr-5' placeholder='e.g. Expiration Date, Purchased At, Price' value={newDetailName} onChangeText={setNewDetailName}/>
-            <Pressable onPress={handleAddingNewField} className={`border-2 px-2`}>
-              <Text>+</Text>
-            </Pressable>
-          </View>
+          <AddAdditionalInput allowableWidth={calculatedWidth} numberAddedDetails={additionalDetails.length} handleAddingNewField={handleAddingNewField} newDetailName={newDetailName} setNewDetailName={setNewDetailName} />
         </View>
       </ScrollView>
+      <View className='py-10 flex-row justify-around'>
+        <Pressable className='items-center bg-green-400 rounded-lg min-w-[100px] disabled:bg-gray-500 disabled:text-white' onPress={handleSubmit(onSubmit)} disabled={ requiredFieldsEmpty  }>
+          <Text className='text-base px-6 py-3 '>
+            Add
+          </Text>
+        </Pressable>
+        <Pressable className='items-center rounded-xl min-w-[100px] border-2' onPress={() => {
+            setVisible({status:false})
+            reset()
+          }
+        }>
+          <Text className='px-6 py-3'>
+            Close
+          </Text>
+        </Pressable>
+      </View>
     </Modal>
   )
 }
