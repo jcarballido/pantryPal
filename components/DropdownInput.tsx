@@ -1,14 +1,16 @@
 import { View, Text, Pressable, LayoutChangeEvent } from 'react-native'
 import React, { useState } from 'react'
+import { ParsedItemData } from '@/sharedTypes/ItemType';
 
 interface Props{
   styles: string;
   value: string;
   onChange:(value:string)=>void;
-  setCalculatedWidth: React.Dispatch<React.SetStateAction<number | undefined>>
+  setCalculatedWidth: React.Dispatch<React.SetStateAction<number | undefined>>;
+  storedCategories: string[]
 }
 
-export default function DropdownInput({styles,value,onChange, setCalculatedWidth}: Props) {
+export default function DropdownInput({styles,value,onChange, setCalculatedWidth, storedCategories}: Props) {
 
   // const [category, setCategory] = useState<string>('Select Category...')
   const [expand, setExpand] = useState<boolean>(false)
@@ -19,7 +21,7 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
 
   const setVal = (newVal: string) => {
     onChange(newVal)
-    setExpand(prev => !prev)
+    setExpand(false)
   }
 
   const calculateWidth = ( event: LayoutChangeEvent ) => {
@@ -44,9 +46,15 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
           </Pressable>
         </View>
         <View className={`${expand ? '-mt-2 w-full scale-y-100 absolute top-full bg-white':'scale-y-0 hidden'} border-2 border-red-600`} >
-          <Text className='m-2' onPress={() => setVal('Option 1')}>Option 1</Text>
-          <Text className='m-2' onPress={()=> setVal('Option 2')}>Option 2</Text>
-          <Text className='m-2' onPress={()=> setVal('Option 3')}>Option 3</Text>
+          {
+            storedCategories && storedCategories.map( category => {
+              return(
+                <Text className='m-2' onPress={()=>setVal(category)}>
+                  {category}
+                </Text>
+              )
+            })
+          }
           <Text className='m-2' onPress={()=> setVal('New Category')}>New Category</Text>
         </View>
       </View>

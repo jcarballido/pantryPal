@@ -1,12 +1,17 @@
 export interface ItemData {
   name: string;
-  id: string;
   amount: string | number;
   category:string;
-  [key: string]:string | number;
+  uid:string;
+  [key: string]:string | number ;
 }
 
-export interface ItemDataProto {
+export interface ParsedItemData {
   id:string;
   value:ItemData;
+}
+
+export interface RawItemData{
+  id:string;
+  value:string;
 }

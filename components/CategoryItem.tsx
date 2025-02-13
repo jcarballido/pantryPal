@@ -1,17 +1,17 @@
 import { View, Text, Pressable } from 'react-native'
 import React, { useState } from 'react'
-import { ItemData } from '@/sharedTypes/ItemType'
+import { ParsedItemData } from '@/sharedTypes/ItemType'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 interface CategoryItemProps {
-  item: ItemData
+  item: ParsedItemData
 }
 
-export default function CategoryItem(props: CategoryItemProps) {
+export default function CategoryItem({item}: CategoryItemProps) {
 
   const [ show, setShow ] = useState({status:false})
   const [ isFlagged, setIsFlagged ] = useState(false)
-  const {name,id,amount, category, ...rest} = props.item
+  const {name,uid,amount, category, newCategory, ...rest} = item.value
   
   const descriptors:(string|number)[][] = []
 
@@ -33,7 +33,7 @@ export default function CategoryItem(props: CategoryItemProps) {
       <View className={`${isFlagged? 'bg-red-300':'bg-white'} p-2 flex flex-row ${show.status? '':''}`}>
         <View className='flex-1'>
           <Text className={headerText}>{name}</Text>
-          <Text className={subtleText}>Item ID: {id}</Text>
+          <Text className={subtleText}>Item ID: {uid}</Text>
           <Text className={bodyText}>Amount: <Text className='text-dark-charcoal-gray text-lg font-normal'>{amount}</Text></Text>
         </View>
         <View className='flex-0 flex-col'>

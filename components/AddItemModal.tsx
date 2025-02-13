@@ -7,12 +7,17 @@ import { useForm, Controller, SubmitHandler } from 'react-hook-form'
 import { Picker } from '@react-native-picker/picker'
 import DropdownInput from './DropdownInput'
 import { useSQLiteContext } from 'expo-sqlite'
+import { ParsedItemData, RawItemData } from '@/sharedTypes/ItemType'
+import 'react-native-get-random-values'
+import { nanoid } from 'nanoid'
 
 type Props = {
   visible:{
     status: boolean
-  },
-  setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>,
+  };
+  setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>;
+  setSavedItems: React.Dispatch<React.SetStateAction<ParsedItemData[]>>;
+  storedCategories: string[]
   // setSuccessfulSubmission: boolean
 }
 
@@ -23,7 +28,7 @@ interface FormData {
   [key: string] : string
 }
 
-export default function AddItemModal({ visible, setVisible }:Props) {
+export default function AddItemModal({ visible, setVisible, setSavedItems, storedCategories }:Props) {
 
   const requiredInputNames = [ 'name','category','amount' ]
 
@@ -39,7 +44,7 @@ export default function AddItemModal({ visible, setVisible }:Props) {
   // const [ requiredFieldState, setRequiredFieldState ] = useState<{allTouched: boolean, anyEmptyRequiredFields:boolean}>({allTouched:false, anyEmptyRequiredFields:true})
   // const [ allTouched, setAllTouched ] = useState<boolean>(false)
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
-  const [selectedLanguage, setSelectedLanguage] = useState();
+  // const [selectedLanguage, setSelectedLanguage] = useState();
 
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -56,17 +61,22 @@ export default function AddItemModal({ visible, setVisible }:Props) {
   } 
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    console.log('Data:', data)
-    const dataString = JSON.stringify(data) 
+    const generatedId = nanoid(10)
+    const dataStringified = JSON.stringify({...data, uid:generatedId}) 
+    console.log('Data being submitted:', data)
     try{
-      await db.runAsync('INSERT INTO item(value) VALUES(?)',dataString)
- 
+      const returnData = await db.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',dataStringified)
+      const lastInsertId = returnData.lastInsertRowId
+      const getLastInsertedRowIdData: RawItemData[] = await db.getAllAsync('SELECT * FROM item WHERE id=?;',[lastInsertId])
+      const { id, value } = getLastInsertedRowIdData[0]
+      const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
+      console.log('Parsed Data:', parsedData)
+      setSavedItems((prevArray):ParsedItemData[] => {
+        const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
+        return addLastInsertedRow
+      })
     }catch(e){
       console.log('Error inserting data:', e)
-    }
-    const allRows = db.getAllSync('SELECT * FROM item');
-    for (const row of allRows) {
-      console.log(row);
     }
     reset()
   }
@@ -111,7 +121,7 @@ export default function AddItemModal({ visible, setVisible }:Props) {
               required: true
             }}
             render={ ({field:{ value, onChange }}) => (
-              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} />
+              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} storedCategories={storedCategories} />
             )}
           />
           { inputValues['category'] === 'New Category' && 
