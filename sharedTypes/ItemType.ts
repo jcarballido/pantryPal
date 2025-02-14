@@ -1,9 +1,9 @@
 export interface ItemData {
   name: string;
-  amount: string | number;
+  amount: string;
   category:string;
   uid:string;
-  [key: string]:string | number ;
+  [key: string]:string ;
 }
 
 export interface ParsedItemData {

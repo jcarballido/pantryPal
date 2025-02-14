@@ -1,5 +1,5 @@
 import { View, Text, FlatList } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { SetStateAction, useEffect, useState } from 'react'
 // import data from '@/dummyData/data'
 import CategoryItem from './CategoryItem'
 import CategorySearch from './CategorySearch'
@@ -8,10 +8,12 @@ import { ParsedItemData } from '@/sharedTypes/ItemType';
 interface CategoryItemProps {
   selectedCategory: string | null;
   classname: string;
-  storedItems: ParsedItemData[]
+  storedItems: ParsedItemData[],
+  editModalVisible: { status: boolean; itemId?:number };
+  setEditModalVisible: React.Dispatch<SetStateAction<{ status: boolean; itemId?:number }>>
 }
 
-export default function CategoryItems({selectedCategory, classname, storedItems}:CategoryItemProps) {
+export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible}:CategoryItemProps) {
 
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function CategoryItems({selectedCategory, classname, storedItems}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           return(
-            <CategoryItem item={ item } />
+            <CategoryItem item={ item }  setEditModalVisible={setEditModalVisible} />
           )
         }}
         className='flex flex-col'

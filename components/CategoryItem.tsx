@@ -1,13 +1,14 @@
 import { View, Text, Pressable } from 'react-native'
-import React, { useState } from 'react'
+import React, { SetStateAction, useState } from 'react'
 import { ParsedItemData } from '@/sharedTypes/ItemType'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 interface CategoryItemProps {
-  item: ParsedItemData
+  item: ParsedItemData;
+  setEditModalVisible: React.Dispatch<SetStateAction<{ status:boolean; item?:ParsedItemData }>>
 }
 
-export default function CategoryItem({item}: CategoryItemProps) {
+export default function CategoryItem({item, setEditModalVisible}: CategoryItemProps) {
 
   const [ show, setShow ] = useState({status:false})
   const [ isFlagged, setIsFlagged ] = useState(false)
@@ -24,6 +25,11 @@ export default function CategoryItem({item}: CategoryItemProps) {
     setIsFlagged(!isFlagged )
   }
 
+  const handleEdit = (item:ParsedItemData) => {
+    console.log('Item passed in:', item)
+    setEditModalVisible({status: true, item:item})
+  }
+
   const bodyText = 'text-dark-charcoal-gray text-lg font-bold'
   const subtleText = `${isFlagged? 'text-zinc-700':'text-zinc-400'} font-sm mb-2 flex-1`
   const headerText = `${isFlagged? 'text-dark-charcoal-gray':'text-primary-action-base'} text-xl font-bold`
@@ -38,7 +44,7 @@ export default function CategoryItem({item}: CategoryItemProps) {
         </View>
         <View className='flex-0 flex-col'>
           <View className='flex-1 flex-row mb-2'>
-            <Pressable className='bg-primary-action-base min-w-[44] min-h-[44] max-h-[60] rounded-lg flex  justify-center items-center mr-8 py-4'>
+            <Pressable onPress={() => handleEdit(item)} className='bg-primary-action-base min-w-[44] min-h-[44] max-h-[60] rounded-lg flex  justify-center items-center mr-8 py-4'>
               <MaterialIcons name='edit' size={24} color={'white'} />
               <Text className='text-base text-white font-bold'>Edit</Text>
             </Pressable>

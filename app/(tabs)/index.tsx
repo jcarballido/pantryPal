@@ -7,12 +7,14 @@ import CategorySearch from '@/components/CategorySearch'
 import { ItemData, RawItemData, ParsedItemData } from '@/sharedTypes/ItemType'
 import AddItemModal from '@/components/AddItemModal'
 import { useSQLiteContext } from 'expo-sqlite'
+import EditItemModal from '@/components/EditItemModal'
 
 export default function index() {
 
   const db = useSQLiteContext()
 
   const [ visible, setVisible ] = useState({ status: false }) 
+  const [ editModalVisible, setEditModalVisible ] = useState({ status: false }) 
   const [ storedItems, setSavedItems ] = useState<ParsedItemData[]>([])
   const [ storedCategories, setStoredCategories ] = useState<string[]>([])
   const [ selectedCategory, setSelectedCategory ] = useState< string|null >(null)
@@ -48,6 +50,7 @@ export default function index() {
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
       <AddItemModal visible={visible} setVisible={setVisible} setSavedItems={setSavedItems} storedCategories={storedCategories}/>
+      <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} storedCategories={storedCategories} />
       <View className='flex-0 flex-row justify-between m-4'>
         <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
           <Text className='text-text '>Add Item</Text>
@@ -67,7 +70,7 @@ export default function index() {
       </ScrollView>
       <CategorySearch defaultValue='Search Category'/>
       <View style={{paddingBottom:barHeight+30}} className={`flex-1 flex-col`}>
-        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} />
+        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} />
       </View>
     </View>
   )

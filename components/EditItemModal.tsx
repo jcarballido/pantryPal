@@ -1,24 +1,17 @@
-import { View, Text, Modal, Pressable, ScrollView, Button, LayoutChangeEvent } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import RequiredInput from './RequiredInput'
-import AddAdditionalInput from './AddAdditionalInput'
+import { View, Text, Modal, ScrollView, Pressable } from 'react-native'
+import React, { SetStateAction, useEffect, useState } from 'react'
+import RequiredInput from './RequiredInput';
+import DropdownInput from './DropdownInput';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form'
 import AdditionalInput from './AdditionalInput'
-import { useForm, Controller, SubmitHandler } from 'react-hook-form'
-import { Picker } from '@react-native-picker/picker'
-import DropdownInput from './DropdownInput'
-import { useSQLiteContext } from 'expo-sqlite'
-import { ParsedItemData, RawItemData } from '@/sharedTypes/ItemType'
-import 'react-native-get-random-values'
-import { nanoid } from 'nanoid'
+import AddAdditionalInput from './AddAdditionalInput';
+import { ParsedItemData } from '@/sharedTypes/ItemType';
 
-type Props = {
-  visible:{
-    status: boolean
-  };
-  setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>;
-  setSavedItems: React.Dispatch<React.SetStateAction<ParsedItemData[]>>;
-  storedCategories: string[]
-  // setSuccessfulSubmission: boolean
+interface EditItemModalProps{
+  editModalVisible: { status:boolean; item?: ParsedItemData };
+  setEditModalVisible: React.Dispatch<SetStateAction<{status: boolean, item?: ParsedItemData}>>;
+  storedCategories: string[];
+  // parsedItemData: ParsedItemData
 }
 
 interface FormData {
@@ -28,23 +21,19 @@ interface FormData {
   [key: string] : string
 }
 
-export default function AddItemModal({ visible, setVisible, setSavedItems, storedCategories }:Props) {
+export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories }: EditItemModalProps) {
 
   const requiredInputNames = [ 'name','category','amount' ]
 
-  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
-  const inputValues = watch()
 
-  const db = useSQLiteContext()
-
-  const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
+  const { control, handleSubmit, reset, watch, formState:{ errors, touchedFields } } = useForm<FormData>()
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
-  // const [ newDetail, setNewDetail ] = useState('')
   const [ newDetailName, setNewDetailName ] = useState('')
-  // const [ requiredFieldState, setRequiredFieldState ] = useState<{allTouched: boolean, anyEmptyRequiredFields:boolean}>({allTouched:false, anyEmptyRequiredFields:true})
-  // const [ allTouched, setAllTouched ] = useState<boolean>(false)
+  const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
-  // const [selectedLanguage, setSelectedLanguage] = useState();
+  
+  
+  const inputValues = watch()
 
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -52,60 +41,48 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
     setNewDetailName('')
   }
 
-  const handleNewDetailRemoval = (detailString:string) => {
-    setAdditionalDetails( prevArr => {
-      const copy = [...prevArr]
-      const test = copy.filter( detail => JSON.stringify(detail) !== JSON.stringify(detailString) )
-      return test
-    })
-  } 
-
-  const onSubmit: SubmitHandler<FormData> = async(data) => {
-    const generatedId = nanoid(10)
-    const dataStringified = JSON.stringify({...data, uid:generatedId}) 
-    console.log('Data being submitted:', data)
-    try{
-      const returnData = await db.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',dataStringified)
-      const lastInsertId = returnData.lastInsertRowId
-      const getLastInsertedRowIdData: RawItemData[] = await db.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
-      const { id, value } = getLastInsertedRowIdData[0]
-      const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
-      console.log('Parsed Data:', parsedData)
-      setSavedItems((prevArray):ParsedItemData[] => {
-        const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
-        return addLastInsertedRow
-      })
-    }catch(e){
-      console.log('Error inserting data:', e)
-    }
-    reset()
-  }
-
-  const calculateWidth = ( event: LayoutChangeEvent ) => {
-    const { width } = event.nativeEvent.layout
-    setCalculatedWidth(Math.ceil(width))
-    return
-  }
   
   useEffect(() => {
     const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
     setRequiredFieldsEmpty(areRequiredFieldsEmpty)
   },[inputValues])
 
+  useEffect(()=>{
+    if(editModalVisible.item){
+      console.log('Item passed in:', editModalVisible.item)
+      reset(editModalVisible.item.value)
+    }
+  },[editModalVisible])
+  
+  const handleNewDetailRemoval = (detailString:string) => {
+    setAdditionalDetails( prevArr => {
+      const copy = [...prevArr]
+      const test = copy.filter( detail => JSON.stringify(detail) !== JSON.stringify(detailString) )
+      return test
+    })
+  }
+
+  const onSubmit: SubmitHandler<FormData> = async(data) => {
+    console.log('Data being submitted:', data)
+    try{
+    }catch(e){
+      console.log('Error inserting data:', e)
+    }
+    reset()
+  }
+
   return (
-    <Modal visible={ visible.status } onRequestClose={() => {
-      setVisible({status:false})
+    <Modal visible={ editModalVisible.status } onRequestClose={() => {
+      setEditModalVisible({status:false})
       reset()
       }  
     }>
-      <View className='flex-row justify-center pt-10'>
-        <Text className='text-2xl '>Add New Item</Text>   
-      </View>
+      <Text>EditItemModal</Text>
       <ScrollView className='flex-1 flex-col bg-primary-light-base font-bold mb-4'>
         <View className='flex flex-col p-3'>
-          <Controller
-            name='name'
+          <Controller 
             control={control}
+            name='name'
             rules={{
               required: true,
             }}
@@ -152,13 +129,12 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
             additionalDetails.map( detail => {
               return(
                 <Controller
-                name={`${detail}`}
-                control={control}
-                render={( { field:{ onChange, onBlur, value }} ) => (
-                  <AdditionalInput detail={detail} handleNewDetailRemoval={handleNewDetailRemoval} allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
-                ) }
-              />
-              )
+                  name={`${detail}`}
+                  control={control}
+                  render={( { field:{ onChange, onBlur, value }} ) => (
+                    <AdditionalInput detail={detail} handleNewDetailRemoval={handleNewDetailRemoval} allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
+                  )}
+                />)
             })
           }
           <AddAdditionalInput allowableWidth={calculatedWidth} numberAddedDetails={additionalDetails.length} handleAddingNewField={handleAddingNewField} newDetailName={newDetailName} setNewDetailName={setNewDetailName} />
@@ -171,7 +147,7 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
           </Text>
         </Pressable>
         <Pressable className='items-center rounded-xl min-w-[100px] border-2' onPress={() => {
-            setVisible({status:false})
+            setEditModalVisible({status:false})
             reset()
           }
         }>
