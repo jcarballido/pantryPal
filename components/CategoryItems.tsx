@@ -10,10 +10,13 @@ interface CategoryItemProps {
   classname: string;
   storedItems: ParsedItemData[],
   editModalVisible: { status: boolean; itemId?:number };
-  setEditModalVisible: React.Dispatch<SetStateAction<{ status: boolean; itemId?:number }>>
+  setEditModalVisible: React.Dispatch<SetStateAction<{ status: boolean; itemId?:number }>>;
+  deleteMode: { status: boolean, category?: string };
+  setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>,
+  itemsMarkedForDeletion: number[]
 }
 
-export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible}:CategoryItemProps) {
+export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion}:CategoryItemProps) {
 
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
   useEffect(() => {
@@ -36,7 +39,7 @@ export default function CategoryItems({selectedCategory, classname, storedItems,
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           return(
-            <CategoryItem item={ item }  setEditModalVisible={setEditModalVisible} />
+            <CategoryItem item={ item }  setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
           )
         }}
         className='flex flex-col'

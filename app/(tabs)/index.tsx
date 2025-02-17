@@ -18,6 +18,8 @@ export default function index() {
   const [ storedItems, setSavedItems ] = useState<ParsedItemData[]>([])
   const [ storedCategories, setStoredCategories ] = useState<string[]>([])
   const [ selectedCategory, setSelectedCategory ] = useState< string|null >(null)
+  const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
+  const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
 
   useEffect(() => {
     const fetchData = async() => {
@@ -46,6 +48,40 @@ export default function index() {
     setVisible(prev => {return { status: !(prev.status) }})
   }
 
+  const enableDelete = () => {
+    setDeleteMode({status:true, category:`${selectedCategory}`})
+  }
+
+  const disableDelete = () => {
+    setDeleteMode({status:false})
+  }
+
+  const handleDelete =  async() => {
+    const placeHolders = itemsMarkedForDeletion.map(id => {return '?'}).join()
+
+    try {
+      await db.runAsync(`DELETE FROM item WHERE id IN (${placeHolders})`,itemsMarkedForDeletion)
+      setSavedItems( prev => {
+        const filteredPrevState = prev.filter(item => !itemsMarkedForDeletion.includes(parseInt(item.id)))
+        return filteredPrevState
+      })
+      setItemsMarkedForDeletion([])
+      setDeleteMode({status:false})
+      console.log('Selected Category:', selectedCategory)
+      const numItemsByCateogry = storedItems.filter(item => item.value.category === selectedCategory).length
+      console.log('Number of items in category:', numItemsByCateogry)
+      console.log('Stored Categories:', storedCategories)
+      if(numItemsByCateogry === 0 && storedCategories !== null && selectedCategory !== null) {
+        const indexOfCurrentCategory = storedCategories.indexOf(selectedCategory)
+        const lengthOfStoredCategories = storedCategories.length
+        if(indexOfCurrentCategory !== lengthOfStoredCategories-1) setSelectedCategory(storedCategories[indexOfCurrentCategory+1])
+        else setSelectedCategory(storedCategories[0])
+      }
+    } catch (e) {
+      console.log('Error processing delelte:', e)
+    }
+  }
+
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
@@ -68,9 +104,24 @@ export default function index() {
           )
         })}
       </ScrollView>
-      <CategorySearch defaultValue='Search Category'/>
+      <View className='flex flex-row justify-between'>
+        <CategorySearch defaultValue='Search Category'/>
+        <View className='flex items-center justify-center mr-4'>
+          {
+            deleteMode.status
+            ? 
+              <View className='flex flex-row gap-5'>
+                <Text onPress={handleDelete}>Confirm</Text>
+                <Pressable onPress={disableDelete}><Text>Cancel</Text></Pressable>
+              </View>
+            : <Pressable onPress={enableDelete}>
+                <Text>Delete</Text>
+              </Pressable>
+          }
+        </View>
+        </View>
       <View style={{paddingBottom:barHeight+30}} className={`flex-1 flex-col`}>
-        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} />
+        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
       </View>
     </View>
   )

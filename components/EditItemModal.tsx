@@ -50,9 +50,17 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   useEffect(()=>{
     if(editModalVisible.item){
       console.log('Item passed in:', editModalVisible.item)
+      const { name, category, newCategory, amount, uid, ...rest } = editModalVisible.item.value
+      const detailNames = Object.keys(rest)      
+      setAdditionalDetails([...detailNames])
+    }
+  },[editModalVisible.item?.value])
+
+  useEffect(()=>{
+    if(editModalVisible.item){
       reset(editModalVisible.item.value)
     }
-  },[editModalVisible])
+  },[additionalDetails])
   
   const handleNewDetailRemoval = (detailString:string) => {
     setAdditionalDetails( prevArr => {
