@@ -82,17 +82,25 @@ export default function index() {
     }
   }
 
+  const handleConsoleLog = () => {
+    const allItems = db.getAllSync('SELECT * FROM item')
+    console.log('All items in db', allItems)
+  }
+
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
       <AddItemModal visible={visible} setVisible={setVisible} setSavedItems={setSavedItems} storedCategories={storedCategories}/>
-      <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} storedCategories={storedCategories} />
+      <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} storedCategories={storedCategories} setSavedItems={setSavedItems}/>
       <View className='flex-0 flex-row justify-between m-4'>
         <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
           <Text className='text-text '>Add Item</Text>
         </Pressable>
         <Pressable className='max-w-max bg-secondary-action-base rounded-xl min-w-12 min-h-12 p-2.5 flex flex-row items-center '>
           <Text className='text-white '>Search All</Text>
+        </Pressable>
+        <Pressable onPress={handleConsoleLog}>
+          <Text>Console Log All</Text>
         </Pressable>
       </View>
       <ScrollView horizontal={true} className='flex-grow-0 flex-row p-2 gap-4 border-2 border-secondary-action-active mx-1 rounded-lg '>

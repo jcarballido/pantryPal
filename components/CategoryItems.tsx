@@ -19,6 +19,7 @@ interface CategoryItemProps {
 export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion}:CategoryItemProps) {
 
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
+  
   useEffect(() => {
     if(selectedCategory !== null) {
       const filteredItems:ParsedItemData[] = storedItems.filter(item => {

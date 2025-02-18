@@ -6,11 +6,13 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form'
 import AdditionalInput from './AdditionalInput'
 import AddAdditionalInput from './AddAdditionalInput';
 import { ParsedItemData } from '@/sharedTypes/ItemType';
+import { useSQLiteContext } from 'expo-sqlite';
 
 interface EditItemModalProps{
   editModalVisible: { status:boolean; item?: ParsedItemData };
   setEditModalVisible: React.Dispatch<SetStateAction<{status: boolean, item?: ParsedItemData}>>;
   storedCategories: string[];
+  setSavedItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
   // parsedItemData: ParsedItemData
 }
 
@@ -21,10 +23,10 @@ interface FormData {
   [key: string] : string
 }
 
-export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories }: EditItemModalProps) {
+export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories, setSavedItems }: EditItemModalProps) {
 
   const requiredInputNames = [ 'name','category','amount' ]
-
+  const db = useSQLiteContext()
 
   const { control, handleSubmit, reset, watch, formState:{ errors, touchedFields } } = useForm<FormData>()
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
@@ -71,12 +73,22 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   }
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    console.log('Data being submitted:', data)
+    // console.log('Data being submitted:', data)
+    // console.log('Item being edited:', editModalVisible)
     try{
+      await db.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(data), JSON.stringify(editModalVisible.item?.id)])
+      setSavedItems(prev => {
+        const updatedItemsArray = prev.map( item => {
+          if(item.id === editModalVisible.item?.id){
+            return { id: item.id, value: JSON.parse(JSON.stringify(data)) }
+          } else {return item}
+        })
+        return updatedItemsArray
+      })
+      setEditModalVisible({ status: false })
     }catch(e){
       console.log('Error inserting data:', e)
     }
-    reset()
   }
 
   return (
@@ -151,7 +163,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
       <View className='py-10 flex-row justify-around'>
         <Pressable className='items-center bg-green-400 rounded-lg min-w-[100px] disabled:bg-gray-500 disabled:text-white' onPress={handleSubmit(onSubmit)} disabled={ requiredFieldsEmpty  }>
           <Text className='text-base px-6 py-3 '>
-            Add
+            Confirm
           </Text>
         </Pressable>
         <Pressable className='items-center rounded-xl min-w-[100px] border-2' onPress={() => {
@@ -159,8 +171,8 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
             reset()
           }
         }>
-          <Text className='px-6 py-3'>
-            Close
+          <Text className='px-6 py-3' onPress={()=> setEditModalVisible({status:false})}>
+            Cancel
           </Text>
         </Pressable>
       </View>
