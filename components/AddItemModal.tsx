@@ -28,6 +28,13 @@ interface FormData {
   [key: string] : string
 }
 
+interface DataFormatted {
+  name: string;
+  amount: string;
+  category: string;
+  [key:string]: string 
+}
+
 export default function AddItemModal({ visible, setVisible, setSavedItems, storedCategories }:Props) {
 
   const requiredInputNames = [ 'name','category','amount' ]
@@ -62,10 +69,17 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const generatedId = nanoid(10)
-    const dataStringified = JSON.stringify({...data, uid:generatedId}) 
-    console.log('Data being submitted:', data)
+    const { name, category, amount, newCategory, ...rest } = data
+    console.log('Category + New Category: ', category, '+', newCategory)
+    const dataFormatted:DataFormatted = {name, amount,category:'', uid:generatedId, ...rest}
+    if(newCategory){
+      dataFormatted['category'] = newCategory
+    }else{
+      dataFormatted['category'] = category
+    }
+    console.log('Formatted Data:', dataFormatted)
     try{
-      const returnData = await db.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',dataStringified)
+      const returnData = await db.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(dataFormatted))
       const lastInsertId = returnData.lastInsertRowId
       const getLastInsertedRowIdData: RawItemData[] = await db.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
       const { id, value } = getLastInsertedRowIdData[0]
