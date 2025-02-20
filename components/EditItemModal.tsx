@@ -23,6 +23,13 @@ interface FormData {
   [key: string] : string
 }
 
+interface DataFormatted {
+  name: string;
+  amount: string;
+  category: string;
+  [key:string]: string 
+}
+
 export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories, setSavedItems }: EditItemModalProps) {
 
   const requiredInputNames = [ 'name','category','amount' ]
@@ -73,14 +80,21 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   }
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    // console.log('Data being submitted:', data)
-    // console.log('Item being edited:', editModalVisible)
+    const { name, category, amount, newCategory, uid, ...rest } = data
+    console.log('Category + New Category: ', category, '+', newCategory)
+    const dataFormatted:DataFormatted = {name, amount,category:'', uid , ...rest}
+    if(newCategory){
+      dataFormatted['category'] = newCategory
+    }else{
+      dataFormatted['category'] = category
+    }
+    console.log('Formatted Data:', dataFormatted)
     try{
-      await db.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(data), JSON.stringify(editModalVisible.item?.id)])
+      await db.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(dataFormatted), JSON.stringify(editModalVisible.item?.id)])
       setSavedItems(prev => {
         const updatedItemsArray = prev.map( item => {
           if(item.id === editModalVisible.item?.id){
-            return { id: item.id, value: JSON.parse(JSON.stringify(data)) }
+            return { id: item.id, value: JSON.parse(JSON.stringify(dataFormatted)) }
           } else {return item}
         })
         return updatedItemsArray

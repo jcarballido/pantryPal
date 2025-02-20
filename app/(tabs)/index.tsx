@@ -39,7 +39,14 @@ export default function index() {
     })))
     categories.sort((a,b) => a.localeCompare(b))
     setStoredCategories([...categories])
-    if(storedItems.length > 1 && selectedCategory === null) setSelectedCategory(categories[0])
+    if(storedItems.length > 1 && selectedCategory === null ) setSelectedCategory(categories[0])
+    const numItemsByCateogry = storedItems.filter(item => item.value.category === selectedCategory).length
+    if(numItemsByCateogry === 0 && storedCategories !== null && selectedCategory !== null) {
+      const indexOfCurrentCategory = storedCategories.indexOf(selectedCategory)
+      const lengthOfStoredCategories = storedCategories.length
+      if(indexOfCurrentCategory !== lengthOfStoredCategories-1) setSelectedCategory(storedCategories[indexOfCurrentCategory+1])
+      else setSelectedCategory(storedCategories[0])
+    }
   }, [storedItems])
 
   const barHeight = useBottomTabBarHeight()
@@ -67,16 +74,9 @@ export default function index() {
       })
       setItemsMarkedForDeletion([])
       setDeleteMode({status:false})
-      console.log('Selected Category:', selectedCategory)
-      const numItemsByCateogry = storedItems.filter(item => item.value.category === selectedCategory).length
-      console.log('Number of items in category:', numItemsByCateogry)
-      console.log('Stored Categories:', storedCategories)
-      if(numItemsByCateogry === 0 && storedCategories !== null && selectedCategory !== null) {
-        const indexOfCurrentCategory = storedCategories.indexOf(selectedCategory)
-        const lengthOfStoredCategories = storedCategories.length
-        if(indexOfCurrentCategory !== lengthOfStoredCategories-1) setSelectedCategory(storedCategories[indexOfCurrentCategory+1])
-        else setSelectedCategory(storedCategories[0])
-      }
+      // console.log('Selected Category:', selectedCategory)
+      // console.log('Number of items in category:', numItemsByCateogry)
+      // console.log('Stored Categories:', storedCategories)
     } catch (e) {
       console.log('Error processing delelte:', e)
     }

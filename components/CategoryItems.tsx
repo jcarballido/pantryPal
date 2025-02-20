@@ -23,12 +23,14 @@ export default function CategoryItems({selectedCategory, classname, storedItems,
   useEffect(() => {
     if(selectedCategory !== null) {
       const filteredItems:ParsedItemData[] = storedItems.filter(item => {
+        // console.log('Item being filtered:', item)
         if(!item.value.newCategory){
           return item.value.category === selectedCategory
         }else{
           return item.value.newCategory === selectedCategory
         }
       })
+      console.log('Filtered Items:', filteredItems)
       setCategorySpecificItems([...filteredItems])
     } 
   },[selectedCategory,storedItems])
