@@ -9,6 +9,7 @@ const initializeDB =  async (db: SQLiteDatabase) => {
     await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS item (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
+    CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);    
     `);
     console.log('DB initialized')
   }catch(e){

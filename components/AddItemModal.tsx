@@ -67,6 +67,23 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
     })
   } 
 
+  const insertNewItem = async(formattedData:{[key:string]:string},name:string) => {
+    db.withExclusiveTransactionAsync( async(txn) => {
+      // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
+      const returnData = await txn.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(formattedData))
+      const lastInsertId = returnData.lastInsertRowId
+      const getLastInsertedRowIdData: RawItemData[] = await txn.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
+      const { id, value } = getLastInsertedRowIdData[0]
+      const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
+      console.log('Parsed Data:', parsedData)
+      await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
+      setSavedItems((prevArray):ParsedItemData[] => {
+        const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
+        return addLastInsertedRow
+      })
+    })
+  }
+
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const generatedId = nanoid(10)
     const { name, category, amount, newCategory, ...rest } = data
@@ -79,16 +96,7 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
     }
     console.log('Formatted Data:', dataFormatted)
     try{
-      const returnData = await db.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(dataFormatted))
-      const lastInsertId = returnData.lastInsertRowId
-      const getLastInsertedRowIdData: RawItemData[] = await db.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
-      const { id, value } = getLastInsertedRowIdData[0]
-      const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
-      console.log('Parsed Data:', parsedData)
-      setSavedItems((prevArray):ParsedItemData[] => {
-        const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
-        return addLastInsertedRow
-      })
+      await insertNewItem(dataFormatted, name)
     }catch(e){
       console.log('Error inserting data:', e)
     }

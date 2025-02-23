@@ -13,12 +13,13 @@ interface CategoryItemProps {
   setEditModalVisible: React.Dispatch<SetStateAction<{ status: boolean; itemId?:number }>>;
   deleteMode: { status: boolean, category?: string };
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>,
-  itemsMarkedForDeletion: number[]
+  itemsMarkedForDeletion: number[],
+  categorySpecificItems:ParsedItemData[],
+  setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedItemData[]>>
 }
 
-export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion}:CategoryItemProps) {
+export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, categorySpecificItems, setCategorySpecificItems}:CategoryItemProps) {
 
-  const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
   
   useEffect(() => {
     if(selectedCategory !== null) {

@@ -20,6 +20,7 @@ export default function index() {
   const [ selectedCategory, setSelectedCategory ] = useState< string|null >(null)
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
+  const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
 
   useEffect(() => {
     const fetchData = async() => {
@@ -83,8 +84,12 @@ export default function index() {
   }
 
   const handleConsoleLog = () => {
-    const allItems = db.getAllSync('SELECT * FROM item')
-    console.log('All items in db', allItems)
+    const allItems = db.getAllSync('SELECT * FROM item_fts')
+    console.log('All items in fts db', allItems)
+  }
+
+  const handleDeleteFTSData = () => {
+    db.runSync('DELETE FROM item_fts')
   }
 
   return (
@@ -102,6 +107,9 @@ export default function index() {
         <Pressable onPress={handleConsoleLog}>
           <Text>Console Log All</Text>
         </Pressable>
+        <Pressable onPress={handleDeleteFTSData}>
+          <Text>Delete All FTS data</Text>
+        </Pressable>
       </View>
       <ScrollView horizontal={true} className='flex-grow-0 flex-row p-2 gap-4 border-2 border-secondary-action-active mx-1 rounded-lg '>
         { storedCategories.map( (category, index) => {
@@ -113,7 +121,7 @@ export default function index() {
         })}
       </ScrollView>
       <View className='flex flex-row justify-between'>
-        <CategorySearch defaultValue='Search Category'/>
+        <CategorySearch defaultValue='Search Category' categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} />
         <View className='flex items-center justify-center mr-4'>
           {
             deleteMode.status
@@ -129,7 +137,7 @@ export default function index() {
         </View>
         </View>
       <View style={{paddingBottom:barHeight+30}} className={`flex-1 flex-col`}>
-        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
+        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} />
       </View>
     </View>
   )

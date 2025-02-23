@@ -79,6 +79,22 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     })
   }
 
+  const updateData = async(formattedData:{[key:string]:string}, name:string) => {
+    await db.withExclusiveTransactionAsync(async(txn) => {
+      await txn.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(formattedData), JSON.stringify(editModalVisible.item?.id)])
+      await txn.runAsync('UPDATE item_fts SET name = ? WHERE item_id = ?', [ name, `${editModalVisible.item?.id}` ])
+    })
+    setSavedItems(prev => {
+      const updatedItemsArray = prev.map( item => {
+        if(item.id === editModalVisible.item?.id){
+          return { id: item.id, value: JSON.parse(JSON.stringify(formattedData)) }
+        } else {return item}
+      })
+      return updatedItemsArray
+    })
+    setEditModalVisible({ status: false })
+  }
+
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const { name, category, amount, newCategory, uid, ...rest } = data
     console.log('Category + New Category: ', category, '+', newCategory)
@@ -90,16 +106,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     }
     console.log('Formatted Data:', dataFormatted)
     try{
-      await db.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(dataFormatted), JSON.stringify(editModalVisible.item?.id)])
-      setSavedItems(prev => {
-        const updatedItemsArray = prev.map( item => {
-          if(item.id === editModalVisible.item?.id){
-            return { id: item.id, value: JSON.parse(JSON.stringify(dataFormatted)) }
-          } else {return item}
-        })
-        return updatedItemsArray
-      })
-      setEditModalVisible({ status: false })
+      await updateData(dataFormatted, name)
     }catch(e){
       console.log('Error inserting data:', e)
     }
