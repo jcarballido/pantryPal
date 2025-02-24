@@ -15,10 +15,12 @@ interface CategoryItemProps {
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>,
   itemsMarkedForDeletion: number[],
   categorySpecificItems:ParsedItemData[],
-  setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedItemData[]>>
+  setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedItemData[]>>;
+  filteredCategorySpecificItems:ParsedItemData[];
+  setFilteredCategorySpecificItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
 }
 
-export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, categorySpecificItems, setCategorySpecificItems}:CategoryItemProps) {
+export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, categorySpecificItems, setCategorySpecificItems, filteredCategorySpecificItems, setFilteredCategorySpecificItems}:CategoryItemProps) {
 
   
   useEffect(() => {
@@ -36,18 +38,35 @@ export default function CategoryItems({selectedCategory, classname, storedItems,
     } 
   },[selectedCategory,storedItems])
   
-  return (
-    <View className={classname}>
-      <FlatList
-        data={categorySpecificItems}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          return(
-            <CategoryItem item={ item }  setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
-          )
-        }}
-        className='flex flex-col'
-      />
-    </View>
-  )
+  if(filteredCategorySpecificItems.length > 0){
+    return (
+      <View className={classname}>
+        <FlatList
+          data={filteredCategorySpecificItems}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => {
+            return(
+              <CategoryItem item={ item }  setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
+            )
+          }}
+          className='flex flex-col'
+        />
+      </View>
+    )
+  }else{
+    return (
+      <View className={classname}>
+        <FlatList
+          data={categorySpecificItems}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => {
+            return(
+              <CategoryItem item={ item }  setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
+            )
+          }}
+          className='flex flex-col'
+        />
+      </View>
+    )
+  }
 }

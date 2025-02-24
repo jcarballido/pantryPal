@@ -21,6 +21,7 @@ export default function index() {
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
+  const [ filteredCategorySpecificItems, setFilteredCategorySpecificItems ] = useState<ParsedItemData[]>([])
 
   useEffect(() => {
     const fetchData = async() => {
@@ -121,7 +122,7 @@ export default function index() {
         })}
       </ScrollView>
       <View className='flex flex-row justify-between'>
-        <CategorySearch defaultValue='Search Category' categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} />
+        <CategorySearch defaultValue='Search Category' categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} filteredCategorySpecificItems={filteredCategorySpecificItems} setFilteredCategorySpecificItems={setFilteredCategorySpecificItems}/>
         <View className='flex items-center justify-center mr-4'>
           {
             deleteMode.status
@@ -137,7 +138,7 @@ export default function index() {
         </View>
         </View>
       <View style={{paddingBottom:barHeight+30}} className={`flex-1 flex-col`}>
-        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} />
+        <CategoryItems selectedCategory={selectedCategory} classname='flex-col' storedItems={storedItems} editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} filteredCategorySpecificItems={filteredCategorySpecificItems} setFilteredCategorySpecificItems={setFilteredCategorySpecificItems}/>
       </View>
     </View>
   )
