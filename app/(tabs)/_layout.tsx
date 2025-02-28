@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Tabs } from 'expo-router'
 import MaterialIcons  from '@expo/vector-icons/MaterialIcons'
 import { Platform } from 'react-native'
 import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite'
+import { ParsedItemData } from '@/sharedTypes/ItemType'
+
 
 const initializeDB =  async (db: SQLiteDatabase) => {
   try{

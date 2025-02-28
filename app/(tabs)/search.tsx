@@ -16,7 +16,7 @@ export default function search() {
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <StatusBar barStyle='dark-content' />
-      <AddItemModal visible={visible} setVisible={setVisible} />
+      <AddItemModal visible={visible} setVisible={setVisible} storedCategories={} />
       <View className='flex-0 flex-row  m-4 justify-between'>
         <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
           <Text className='text-zinc-200 '>Add Item</Text>

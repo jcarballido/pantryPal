@@ -8,8 +8,11 @@ import { ItemData, RawItemData, ParsedItemData } from '@/sharedTypes/ItemType'
 import AddItemModal from '@/components/AddItemModal'
 import { useSQLiteContext } from 'expo-sqlite'
 import EditItemModal from '@/components/EditItemModal'
+import useItemStore from '@/stores/useItemStore'
 
 export default function index() {
+
+  const { setStoredItems } = useItemStore()
 
   const db = useSQLiteContext()
 
