@@ -4,11 +4,12 @@ import React, { SetStateAction, useEffect, useState } from 'react'
 import CategoryItem from './CategoryItem'
 import CategorySearch from './CategorySearch'
 import { ParsedItemData } from '@/sharedTypes/ItemType';
+import useItemStore from '@/stores/useItemStore';
 
 interface CategoryItemProps {
   selectedCategory: string | null;
   classname: string;
-  storedItems: ParsedItemData[],
+  // storedItems: ParsedItemData[],
   editModalVisible: { status: boolean; itemId?:number };
   setEditModalVisible: React.Dispatch<SetStateAction<{ status: boolean; itemId?:number }>>;
   deleteMode: { status: boolean, category?: string };
@@ -20,12 +21,13 @@ interface CategoryItemProps {
   setFilteredCategorySpecificItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
 }
 
-export default function CategoryItems({selectedCategory, classname, storedItems, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, categorySpecificItems, setCategorySpecificItems, filteredCategorySpecificItems, setFilteredCategorySpecificItems}:CategoryItemProps) {
+export default function CategoryItems({selectedCategory, classname, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, categorySpecificItems, setCategorySpecificItems, filteredCategorySpecificItems, setFilteredCategorySpecificItems}:CategoryItemProps) {
 
+  const { allStoredItems } = useItemStore() 
   
   useEffect(() => {
     if(selectedCategory !== null) {
-      const filteredItems:ParsedItemData[] = storedItems.filter(item => {
+      const filteredItems:ParsedItemData[] = allStoredItems.filter(item => {
         // console.log('Item being filtered:', item)
         if(!item.value.newCategory){
           return item.value.category === selectedCategory
@@ -33,10 +35,10 @@ export default function CategoryItems({selectedCategory, classname, storedItems,
           return item.value.newCategory === selectedCategory
         }
       })
-      console.log('Filtered Items:', filteredItems)
+      // console.log('Filtered Items:', filteredItems)
       setCategorySpecificItems([...filteredItems])
     } 
-  },[selectedCategory,storedItems])
+  },[selectedCategory,allStoredItems])
   
   if(filteredCategorySpecificItems.length > 0){
     return (

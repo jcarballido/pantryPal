@@ -5,14 +5,15 @@ import DropdownInput from './DropdownInput';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form'
 import AdditionalInput from './AdditionalInput'
 import AddAdditionalInput from './AddAdditionalInput';
-import { ParsedItemData } from '@/sharedTypes/ItemType';
+import { ItemData, ParsedItemData } from '@/sharedTypes/ItemType';
 import { useSQLiteContext } from 'expo-sqlite';
+import useItemStore from '@/stores/useItemStore';
 
 interface EditItemModalProps{
   editModalVisible: { status:boolean; item?: ParsedItemData };
   setEditModalVisible: React.Dispatch<SetStateAction<{status: boolean, item?: ParsedItemData}>>;
   storedCategories: string[];
-  setSavedItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
+  // setSavedItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
   // parsedItemData: ParsedItemData
 }
 
@@ -23,14 +24,16 @@ interface FormData {
   [key: string] : string
 }
 
-interface DataFormatted {
-  name: string;
-  amount: string;
-  category: string;
-  [key:string]: string 
-}
+// interface DataFormatted {
+//   name: string;
+//   amount: string;
+//   category: string;
+//   [key:string]: string 
+// }
 
-export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories, setSavedItems }: EditItemModalProps) {
+export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories }: EditItemModalProps) {
+
+  const { updateStoredItems } = useItemStore()
 
   const requiredInputNames = [ 'name','category','amount' ]
   const db = useSQLiteContext()
@@ -79,26 +82,27 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     })
   }
 
-  const updateData = async(formattedData:{[key:string]:string}, name:string) => {
+  const updateData = async(formattedData:ItemData, name:string) => {
     await db.withExclusiveTransactionAsync(async(txn) => {
       await txn.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(formattedData), JSON.stringify(editModalVisible.item?.id)])
       await txn.runAsync('UPDATE item_fts SET name = ? WHERE item_id = ?', [ name, `${editModalVisible.item?.id}` ])
     })
-    setSavedItems(prev => {
-      const updatedItemsArray = prev.map( item => {
-        if(item.id === editModalVisible.item?.id){
-          return { id: item.id, value: JSON.parse(JSON.stringify(formattedData)) }
-        } else {return item}
-      })
-      return updatedItemsArray
-    })
+    updateStoredItems({id:JSON.stringify(editModalVisible.item?.id),value:formattedData})
+    // setSavedItems(prev => {
+    //   const updatedItemsArray = prev.map( item => {
+    //     if(item.id === editModalVisible.item?.id){
+    //       return { id: item.id, value: JSON.parse(JSON.stringify(formattedData)) }
+    //     } else {return item}
+    //   })
+    //   return updatedItemsArray
+    // })
     setEditModalVisible({ status: false })
   }
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const { name, category, amount, newCategory, uid, ...rest } = data
     console.log('Category + New Category: ', category, '+', newCategory)
-    const dataFormatted:DataFormatted = {name, amount,category:'', uid , ...rest}
+    const dataFormatted:ItemData = {name, amount,category:'', uid , ...rest}
     if(newCategory){
       dataFormatted['category'] = newCategory
     }else{
@@ -170,6 +174,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
             additionalDetails.map( detail => {
               return(
                 <Controller
+                  key={detail}
                   name={`${detail}`}
                   control={control}
                   render={( { field:{ onChange, onBlur, value }} ) => (

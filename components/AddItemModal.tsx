@@ -10,13 +10,14 @@ import { useSQLiteContext } from 'expo-sqlite'
 import { ParsedItemData, RawItemData } from '@/sharedTypes/ItemType'
 import 'react-native-get-random-values'
 import { nanoid } from 'nanoid'
+import useItemStore from '@/stores/useItemStore'
 
 type Props = {
   visible:{
     status: boolean
   };
   setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>;
-  setSavedItems: React.Dispatch<React.SetStateAction<ParsedItemData[]>>;
+  // setSavedItems: React.Dispatch<React.SetStateAction<ParsedItemData[]>>;
   storedCategories: string[]
   // setSuccessfulSubmission: boolean
 }
@@ -35,7 +36,9 @@ interface DataFormatted {
   [key:string]: string 
 }
 
-export default function AddItemModal({ visible, setVisible, setSavedItems, storedCategories }:Props) {
+export default function AddItemModal({ visible, setVisible, storedCategories }:Props) {
+
+  const { addItems } = useItemStore()
 
   const requiredInputNames = [ 'name','category','amount' ]
 
@@ -77,10 +80,11 @@ export default function AddItemModal({ visible, setVisible, setSavedItems, store
       const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
       console.log('Parsed Data:', parsedData)
       await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
-      setSavedItems((prevArray):ParsedItemData[] => {
-        const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
-        return addLastInsertedRow
-      })
+      addItems(parsedData)
+      // setSavedItems((prevArray):ParsedItemData[] => {
+      //   const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
+      //   return addLastInsertedRow
+      // })
     })
   }
 

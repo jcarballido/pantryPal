@@ -46,7 +46,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
   }
 
   useEffect(() => {
-    console.log('Items checked:', itemsMarkedForDeletion)
+    // console.log('Items checked:', itemsMarkedForDeletion)
   }, [itemsMarkedForDeletion])
 
   useEffect(()=>{

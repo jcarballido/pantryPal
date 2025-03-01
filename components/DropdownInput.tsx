@@ -49,7 +49,7 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
           {
             storedCategories && storedCategories.map( category => {
               return(
-                <Text className='m-2' onPress={()=>setVal(category)}>
+                <Text key={category} className='m-2' onPress={()=>setVal(category)}>
                   {category}
                 </Text>
               )
