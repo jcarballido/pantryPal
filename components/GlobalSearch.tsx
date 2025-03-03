@@ -4,19 +4,22 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useSQLiteContext } from 'expo-sqlite';
 import Fuse from 'fuse.js'
 import { ParsedItemData } from '@/sharedTypes/ItemType';
+import useItemStore from '@/stores/useItemStore';
 
 interface Props{
-  defaultValue: string;
-  customStyle?: string;
-  categorySpecificItems:ParsedItemData[],
-  setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedItemData[]>>;
-  filteredCategorySpecificItems:ParsedItemData[];
-  setFilteredCategorySpecificItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
+  // defaultValue: string;
+  // customStyle?: string;
+  // categorySpecificItems:ParsedItemData[],
+  // setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedItemData[]>>;
+  // filteredCategorySpecificItems:ParsedItemData[];
+  // setFilteredCategorySpecificItems: React.Dispatch<SetStateAction<ParsedItemData[]>>,
+  setSearchResult: React.Dispatch<SetStateAction<ParsedItemData[]>>
 }
 
-export default function CategorySearch({defaultValue, customStyle, categorySpecificItems, setCategorySpecificItems, filteredCategorySpecificItems, setFilteredCategorySpecificItems}: Props) {
+export default function GlobalSearch({ setSearchResult }: Props) {
 
   const db = useSQLiteContext()
+  const { allStoredItems } = useItemStore()
   
   const [ value, setValue ] = useState('')
   const [ isFocused, setIsFocused ] = useState(false)
@@ -36,13 +39,13 @@ export default function CategorySearch({defaultValue, customStyle, categorySpeci
         const result = searchCategoryItems(value)
         console.log('Result from search:')
         console.log(JSON.stringify(result,null,2))
-        setFilteredCategorySpecificItems( () => {
-          const searchResults = categorySpecificItems.filter( item => result.includes(item.id) )
+        setSearchResult( () => {
+          const searchResults = allStoredItems.filter( item => result.includes(item.id) )
           return searchResults
         })
       }
       if(value === ''){
-        setFilteredCategorySpecificItems([])
+        setSearchResult([])
       }
     },500)
 
@@ -53,13 +56,13 @@ export default function CategorySearch({defaultValue, customStyle, categorySpeci
     const fuseOptions = {
       keys:[ "value.name" ]
     }
-    const fuse = new Fuse(categorySpecificItems,fuseOptions)
+    const fuse = new Fuse(allStoredItems,fuseOptions)
     return fuse.search(value).map( results => results.item.id)
   }
 
   const clearSearch = () => {
     setValue('')
-    setFilteredCategorySpecificItems([])
+    setSearchResult([])
   };
   
   return (

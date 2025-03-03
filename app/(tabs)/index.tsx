@@ -30,7 +30,6 @@ export default function index() {
     const fetchData = async() => {
       const allItems:RawItemData[] = await db.getAllAsync('SELECT * FROM item')
       const parsedItems: ParsedItemData[] = allItems.map((item) => {
-        console.log('type of item id:', typeof(item.id))
         return {id:(item['id']),value:JSON.parse(item.value)}
       })
       setStoredItems(parsedItems)
