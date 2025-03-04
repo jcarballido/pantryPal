@@ -18,7 +18,6 @@ export default function index() {
 
   const [ visible, setVisible ] = useState({ status: false }) 
   const [ editModalVisible, setEditModalVisible ] = useState({ status: false }) 
-  // const [ allStoredItems, setSavedItems ] = useState<ParsedItemData[]>([])
   const [ storedCategories, setStoredCategories ] = useState<string[]>([])
   const [ selectedCategory, setSelectedCategory ] = useState< string|null >(null)
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
