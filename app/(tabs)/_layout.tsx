@@ -4,6 +4,7 @@ import MaterialIcons  from '@expo/vector-icons/MaterialIcons'
 import { Platform } from 'react-native'
 import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite'
 import { ParsedItemData } from '@/sharedTypes/ItemType'
+import { CURRENT_VERSION } from '@/constants/dbVersion'
 
 
 const initializeDB =  async (db: SQLiteDatabase) => {
@@ -15,18 +16,39 @@ const initializeDB =  async (db: SQLiteDatabase) => {
     CREATE TABLE IF NOT EXISTS shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
     CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
     `);
-
     console.log('DB initialized')
   }catch(e){
     console.log('Error initializing:', e)
   }
 }
 
+type MigrationFunction = ()=>Promise<void>
+
+const MIGRATION_STEPS: Record<number, MigrationFunction> = {
+  1: async() => {
+    await console.log('1')
+  } 
+}
+
+const initializeAndMigrateDB = async( db: SQLiteDatabase ) => {
+  // Bring in the current DB version
+  // Bring in the current user_version
+  const result = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+  let currentDbVersion = result ? result.user_version:0
+  // Compare both; If user_version is behind, then begin migrations.
+  while(currentDbVersion < CURRENT_VERSION){
+    currentDbVersion += 1
+    MIGRATION_STEPS[currentDbVersion]()
+  }
+
+  await db.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+}
+
 
 export default function TabsLayout() {
 
   return (
-    <SQLiteProvider databaseName='test.db' onInit={Platform.OS === 'android'||'ios'? initializeDB:undefined}>
+    <SQLiteProvider databaseName='main.db' onInit={Platform.OS === 'android'||'ios'? initializeDB:undefined}>
       <Tabs screenOptions={
         {
           tabBarStyle:{
