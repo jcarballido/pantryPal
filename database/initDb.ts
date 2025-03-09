@@ -1,0 +1,116 @@
+import { NeededItem, ParsedNeededItemData, RawItemData, RawShoppingListItemData } from "@/sharedTypes/ItemType"
+import { SQLiteDatabase } from "expo-sqlite"
+import { V0_SCHEMA, V1_SCHEMA } from "./schemas"
+import { CURRENT_VERSION } from "@/constants/dbVersion"
+
+type MigrationFunction = (db: SQLiteDatabase)=>Promise<void>
+
+const MIGRATION_STEPS: Record<number, MigrationFunction> = {
+  1: async(db) => {
+  } 
+}
+
+const getAllStoredData = async(db: SQLiteDatabase) => {
+  try {
+    const storedItems: RawItemData[] = await db.getAllAsync('SELECT * FROM item')  
+    const storedShoppingList: RawShoppingListItemData[] = await db.getAllAsync('SELECT * FROM shopping_list_item')
+    return {storedItems, storedShoppingList}    
+  } catch (e) {
+    throw e
+  }
+}
+
+const parseStoredItems = (arr: RawItemData[]): { name: string, category: string, amount:string, uid: string, details: string }[] => {
+  const parsedItems = arr.map( rawItem => {
+    const parsed = JSON.parse(rawItem.value)
+    const { name, category, amount, uid, ...rest } = parsed
+    const details =  {...rest}
+    return { id:rawItem.id ,name, category, amount, uid, details: JSON.stringify(details) }
+  }) 
+
+  return parsedItems
+}
+const parseStoredShoppingListItems = (arr: RawShoppingListItemData[]): { name: string, quantity: string, details: string }[] => {
+  const parsedShoppingListItems = arr.map( rawItem => {
+    // const parsed = JSON.parse(rawItem.value)
+    const { name, quantity, ...rest } = JSON.parse(rawItem.value)
+    const details =  {...rest}
+    return { name, quantity, details: JSON.stringify(details) }
+  }) 
+
+  return parsedShoppingListItems
+}
+
+export const migrateDB = async( db: SQLiteDatabase ) => {
+
+  const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+
+  let currentDbVersion = userVersion ? userVersion.user_version : 0
+
+  if(currentDbVersion == 0){
+    try {
+      const storedData = await getAllStoredData(db)      
+      const { storedItems, storedShoppingList } = storedData
+      if(storedItems.length === 0 && storedShoppingList.length === 0){
+        try{
+          await db.withExclusiveTransactionAsync( async(txn) => {
+            await txn.execAsync(V1_SCHEMA);    
+            await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+          })
+          console.log('DB initialized')
+          return
+        }catch(e){
+          console.log(`Error migrating to the latest schema - v${CURRENT_VERSION}:`, e)
+          console.log('Schema set to original - v0.')
+          await db.execAsync(V0_SCHEMA)    
+          return      
+        }
+      }else{
+        db.withExclusiveTransactionAsync(async(txn)=>{
+          await db.execAsync(`
+            PRAGMA journal_mode = WAL;
+            CREATE TABLE IF NOT EXIST new_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, amount TEXT NOT NULL, category TEXT NOT NULL, details TEXT, uid TEXT NOT NULL);
+            CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);
+            CREATE TABLE IF NOT EXISTS new_shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT, quantity TEXT);
+            CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
+          `)
+          const parsedItems = parseStoredItems(storedItems)
+          const parsedShoppingListItems = parseStoredShoppingListItems(storedShoppingList)
+          for(const item of parsedItems){
+            const {name,amount,category,uid,details} = item
+            await txn.execAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)')
+          }
+          for(const item of parsedShoppingListItems){
+            const {name,details} = item
+            await txn.execAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)')
+          }
+          
+        })
+      }
+    } catch (e) {
+      console.log('Error retrieving and migrating stored data:', e)
+      console.log('Schema set to original - v0.')
+      await db.execAsync(V0_SCHEMA)
+      return
+    }
+  }
+  // Compare both; If user_version is behind, then begin migrations.
+  while(currentDbVersion > 0 && currentDbVersion < CURRENT_VERSION){
+    currentDbVersion += 1
+    const migratonFn = MIGRATION_STEPS[currentDbVersion]
+    if( migratonFn ) await migratonFn(db)
+    else console.log(`Migration steps do not exist for version ${currentDbVersion}`)
+  }
+
+  await db.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+}
+
+/*
+await db.execAsync( `
+          PRAGMA journal_mode = WAL;
+          CREATE TABLE IF NOT EXIST new_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, amount TEXT NOT NULL, category TEXT NOT NULL, details TEXT, uid TEXT NOT NULL);
+          CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);
+          CREATE TABLE IF NOT EXISTS new_shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT, quantity TEXT);
+          CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
+        `)
+*/

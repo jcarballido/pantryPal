@@ -27,6 +27,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
   }
 
   const handleFlag = () => {
+    
     setIsFlagged(!isFlagged )
   }
 
