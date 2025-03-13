@@ -69,7 +69,7 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
         db.withExclusiveTransactionAsync(async(txn)=>{
           await db.execAsync(`
             PRAGMA journal_mode = WAL;
-            CREATE TABLE IF NOT EXIST new_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, amount TEXT NOT NULL, category TEXT NOT NULL, details TEXT, uid TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS new_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, amount TEXT NOT NULL, category TEXT NOT NULL, details TEXT, uid TEXT NOT NULL);
             CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);
             CREATE TABLE IF NOT EXISTS new_shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT, quantity TEXT);
             CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
@@ -78,14 +78,23 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
           const parsedShoppingListItems = parseStoredShoppingListItems(storedShoppingList)
           for(const item of parsedItems){
             const {name,amount,category,uid,details} = item
-            await txn.execAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)')
+            await txn.runAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)',name, amount, category,uid,details)
           }
           for(const item of parsedShoppingListItems){
             const {name,details} = item
-            await txn.execAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)')
+            await txn.runAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)',name, details)
           }
-          
+          await txn.execAsync(`
+            DROP TABLE IF EXISTS item;
+            DROP TABLE IF EXISTS shopping_list_item;
+            ALTER TABLE new_item
+            RENAME to item;
+            ALTER TABLE new_shopping_list_item
+            RENAME to shopping_list_item;
+          `)
+          await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
         })
+        return
       }
     } catch (e) {
       console.log('Error retrieving and migrating stored data:', e)
@@ -95,14 +104,20 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
     }
   }
   // Compare both; If user_version is behind, then begin migrations.
-  while(currentDbVersion > 0 && currentDbVersion < CURRENT_VERSION){
-    currentDbVersion += 1
-    const migratonFn = MIGRATION_STEPS[currentDbVersion]
-    if( migratonFn ) await migratonFn(db)
+  while(currentDbVersion > 0 && currentDbVersion <= CURRENT_VERSION){
+    ++currentDbVersion 
+    const migrationFn = MIGRATION_STEPS[currentDbVersion]
+    if( migrationFn ) try{
+      await migrationFn(db)
+    } catch(e){
+      console.log(`Error running migration function for version ${currentDbVersion}`)
+      break
+    }
     else console.log(`Migration steps do not exist for version ${currentDbVersion}`)
   }
 
   await db.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+  return
 }
 
 /*
