@@ -73,6 +73,7 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
   const insertNewItem = async(formattedData:{[key:string]:string},name:string) => {
     db.withExclusiveTransactionAsync( async(txn) => {
       // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
+      console.log('Formatted Data: ', formattedData)
       const returnData = await txn.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(formattedData))
       const lastInsertId = returnData.lastInsertRowId
       const getLastInsertedRowIdData: RawItemData[] = await txn.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
