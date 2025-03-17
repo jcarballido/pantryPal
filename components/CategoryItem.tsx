@@ -16,13 +16,14 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
   const [ show, setShow ] = useState({status:false})
   const [ isFlagged, setIsFlagged ] = useState(false)
   const [ isChecked, setIsChecked ] = useState(false)
-  const {name,uid,amount, category, newCategory, ...rest} = item.value
+  const {name,uid,amount, category , details} = item
   const itemId = item.id
   
   const descriptors:(string|number)[][] = []
+  // console.log('Item passed into Category Item component:',item)
 
-  for (const key in rest){
-    const value = rest[key]
+  for (const key in details){
+    const value = details[key]
     descriptors.push([key,value])
   }
 
@@ -79,7 +80,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
               </Pressable>
             </View>
             {
-              Object.keys(rest).length > 0
+              Object.keys(details).length > 0
               ? <Pressable className={`flex items-center justify-center min-w-[44] h-[44] border-2 border-light-cool-gray rounded-lg ${show.status? 'bg-light-cool-gray':'bg-transparent'}`} onPress={()=>setShow(previousShow => {return {status:!previousShow.status}})} > 
                   <Text className='text-base'>Details</Text>
                 </Pressable>
@@ -90,7 +91,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
         <View className={`${show.status?'bg-light-cool-gray p-2':''} `}>
           { show.status && descriptors.map( descriptor => {
             return(
-              <View className='flex flex-row mb-2'>
+              <View key={descriptor[0]} className='flex flex-row mb-2'>
                 <Text className={'text-dark-charcoal-gray font-bold'}>{descriptor[0]}: </Text>
                 <Text className={'text-dark-charcoal-gray'}>{descriptor[1]}</Text>
               </View>

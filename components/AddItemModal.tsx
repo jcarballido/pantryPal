@@ -11,6 +11,7 @@ import { ParsedItemData, RawItemData } from '@/sharedTypes/ItemType'
 import 'react-native-get-random-values'
 import { nanoid } from 'nanoid'
 import useItemStore from '@/stores/useItemStore'
+import { addItemStoredItems } from '@/database/addItemStoredItems'
 
 type Props = {
   visible:{
@@ -70,42 +71,55 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
     })
   } 
 
-  const insertNewItem = async(formattedData:{[key:string]:string},name:string) => {
-    db.withExclusiveTransactionAsync( async(txn) => {
-      // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
-      console.log('Formatted Data: ', formattedData)
-      const returnData = await txn.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(formattedData))
-      const lastInsertId = returnData.lastInsertRowId
-      const getLastInsertedRowIdData: RawItemData[] = await txn.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
-      const { id, value } = getLastInsertedRowIdData[0]
-      const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
-      console.log('Parsed Data:', parsedData)
-      await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
-      addItems(parsedData)
-      // setSavedItems((prevArray):ParsedItemData[] => {
-      //   const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
-      //   return addLastInsertedRow
-      // })
-    })
-  }
+  // const insertNewItem = async(formattedData:{[key:string]:string},name:string) => {
+  //   try{
+  //     await db.withExclusiveTransactionAsync( async(txn) => {
+  //     // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
+  //     console.log('Formatted Data: ', formattedData)
+  //     const returnData = await txn.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(formattedData))
+  //     const lastInsertId = returnData.lastInsertRowId
+  //     const getLastInsertedRowIdData: RawItemData[] = await txn.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
+  //     const { id, value } = getLastInsertedRowIdData[0]
+  //     const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
+  //     console.log('Parsed Data:', parsedData)
+  //     await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
+  //     addItems(parsedData)
+  //     // setSavedItems((prevArray):ParsedItemData[] => {
+  //     //   const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
+  //     //   return addLastInsertedRow
+  //     // })
+  //   })}catch(e){
+  //     console.log('Error inserting item: ', e)
+  //   }
+  // }
+
+  
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    const generatedId = nanoid(10)
-    const { name, category, amount, newCategory, ...rest } = data
-    console.log('Category + New Category: ', category, '+', newCategory)
-    const dataFormatted:DataFormatted = {name, amount,category:'', uid:generatedId, ...rest}
-    if(newCategory){
-      dataFormatted['category'] = newCategory
-    }else{
-      dataFormatted['category'] = category
-    }
-    console.log('Formatted Data:', dataFormatted)
+
+    const {name,amount,category, newCategory,...rest} = data
     try{
-      await insertNewItem(dataFormatted, name)
+      await addItemStoredItems(db, name, amount,newCategory, category, rest ,addItems)
     }catch(e){
-      console.log('Error inserting data:', e)
+      console.log('Error adding new item: ', e)
     }
     reset()
+    // const generatedId = nanoid(10)
+    // const { name, category, amount, newCategory, ...rest } = data
+    // console.log('Category + New Category: ', category, '+', newCategory)
+    // const dataFormatted:DataFormatted = {name, amount,category:'', uid:generatedId, ...rest}
+    // if(newCategory){
+    //   dataFormatted['category'] = newCategory
+    // }else{
+    //   dataFormatted['category'] = category
+    // }
+    // console.log('Formatted Data:', dataFormatted)
+    // try{
+    //   await insertNewItem(dataFormatted, name)
+    // }catch(e){
+    //   console.log('Error inserting data:', e)
+    // }
+    // reset()
   }
 
   const calculateWidth = ( event: LayoutChangeEvent ) => {

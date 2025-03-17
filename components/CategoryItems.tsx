@@ -29,11 +29,11 @@ export default function CategoryItems({selectedCategory, classname, editModalVis
     if(selectedCategory !== null) {
       const filteredItems:ParsedItemData[] = allStoredItems.filter(item => {
         // console.log('Item being filtered:', item)
-        if(!item.value.newCategory){
-          return item.value.category === selectedCategory
-        }else{
-          return item.value.newCategory === selectedCategory
-        }
+        // if(!item.newCategory){
+          // return item.value.category === selectedCategory
+        // }else{
+          return item.category === selectedCategory
+        // }
       })
       // console.log('Filtered Items:', filteredItems)
       setCategorySpecificItems([...filteredItems])

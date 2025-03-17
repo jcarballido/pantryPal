@@ -28,8 +28,9 @@ export default function index() {
   useEffect(() => {
     const fetchData = async() => {
       const allItems:RawItemData[] = await db.getAllAsync('SELECT * FROM item')
+      // console.log('All items stored:', allItems)
       const parsedItems: ParsedItemData[] = allItems.map((item) => {
-        return {id:(item['id']),value:JSON.parse(item.value)}
+        return {id:(item['id']),uid:item.uid,name:item.name, category:item.category, amount:item.amount,details:JSON.parse(item.details)}
       })
       setStoredItems(parsedItems)
     }
@@ -38,13 +39,13 @@ export default function index() {
 
   useEffect(() => {
     const categories: string[] = Array.from(new Set(allStoredItems.map(item => {
-      if(item.value.category === 'New Category' && typeof(item.value.newCategory) === 'string') return item.value.newCategory
-      return item.value.category
+      // if(item.category === 'New Category' && typeof(item.newCategory) === 'string') return item.value.newCategory
+      return item.category
     })))
     categories.sort((a,b) => a.localeCompare(b))
     setStoredCategories([...categories])
     if(allStoredItems.length > 1 && selectedCategory === null ) setSelectedCategory(categories[0])
-    const numItemsByCateogry = allStoredItems.filter(item => item.value.category === selectedCategory).length
+    const numItemsByCateogry = allStoredItems.filter(item => item.category === selectedCategory).length
     if(numItemsByCateogry === 0 && storedCategories !== null && selectedCategory !== null) {
       const indexOfCurrentCategory = storedCategories.indexOf(selectedCategory)
       const lengthOfStoredCategories = storedCategories.length
@@ -90,8 +91,8 @@ export default function index() {
   }
 
   const handleConsoleLog = () => {
-    const allItems = db.getAllSync('SELECT * FROM item_fts')
-    console.log('All items in fts db', allItems)
+    const allItems = db.getAllSync('SELECT * FROM item')
+    console.log('All items in db', allItems)
   }
 
   const handleDeleteFTSData = () => {
@@ -113,9 +114,9 @@ export default function index() {
         <Pressable onPress={handleConsoleLog}>
           <Text>Console Log All</Text>
         </Pressable>
-        <Pressable onPress={handleDeleteFTSData}>
+        {/* <Pressable onPress={handleDeleteFTSData}>
           <Text>Delete All FTS data</Text>
-        </Pressable>
+        </Pressable> */}
       </View>
       <ScrollView horizontal={true} className='flex-grow-0 flex-row p-2 gap-4 border-2 border-secondary-action-active mx-1 rounded-lg '>
         { storedCategories.map( (category, index) => {

@@ -14,7 +14,11 @@ interface NeededItemData{
 
 export interface ParsedItemData {
   id:string;
-  value: ItemData;
+  name: string;
+  category: string;
+  amount: string;
+  uid?:string;
+  details: { [key:string]:string }
 }
 
 export interface ParsedNeededItemData {
@@ -24,7 +28,11 @@ export interface ParsedNeededItemData {
 
 export interface RawItemData{
   id: string;
-  value: string;
+  name: string;
+  uid:string,
+  category: string;
+  amount: string;
+  details: string;
 }
 
 export interface RawShoppingListItemData {

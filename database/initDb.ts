@@ -51,10 +51,11 @@ const getAllStoredData = async(db: SQLiteDatabase) => {
 
 const parseStoredItems = (arr: RawItemData[]): { name: string, category: string, amount:string, uid: string, details: string }[] => {
   const parsedItems = arr.map( rawItem => {
-    const parsed = JSON.parse(rawItem.value)
-    const { name, category, amount, uid, ...rest } = parsed
-    const details =  {...rest}
-    return { id:rawItem.id ,name, category, amount, uid, details: JSON.stringify(details) }
+    // const parsed = JSON.parse(rawItem.value)
+
+    // const { name, category, amount, uid, ...rest } = parsed
+    // const details =  {...rest}
+    return { id:rawItem.id ,name:rawItem.name, category:rawItem.category, amount:rawItem.amount, uid:rawItem.uid, details: rawItem.details }
   }) 
 
   return parsedItems
@@ -72,14 +73,31 @@ const parseStoredShoppingListItems = (arr: RawShoppingListItemData[]): { name: s
 
 export const migrateDB = async( db: SQLiteDatabase ) => {
 
+  // await db.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+  // console.log('Current Version set to v0')
+  // await db.execAsync(V0_SCHEMA)    
+  // const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+  // console.log('Current tables:', tables)
+
   const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+
 
   let currentDbVersion = userVersion ? userVersion.user_version : 0
 
-  if(currentDbVersion === CURRENT_VERSION) {
-    console.log('DB is current; initialized.')  
+  if(!CURRENT_VERSION) {
+    await db.execAsync(V0_SCHEMA)
+    console.log('Current version is 0. Schema v0 applied.')
     return
+  }else{
+    console.log('Current version has been updated since v0. Migration will be evaluated.')
   }
+
+  // if(currentDbVersion !== 0 && currentDbVersion === CURRENT_VERSION) {
+  //   console.log(`DB is current at version ${currentDbVersion}; initialized.`)
+  //   const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+  //   console.log('Current tables:', tables)
+  //   return
+  // }
 
   const storedData = await getAllStoredData(db)      
   const { storedItems, storedShoppingList } = storedData
@@ -88,7 +106,13 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
     if(currentDbVersion == 0 && storedItems.length === 0 && storedShoppingList.length === 0){
       try{
         await db.withExclusiveTransactionAsync( async(txn) => {
+          console.log('Current version determined as v0.')
+          // const dbList = await txn.getFirstAsync('PRAGMA database_list')
+          //   const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+          //   console.log('v0 tables:', tables)
           await txn.execAsync(V1_SCHEMA);    
+          // const tables2 = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+          // console.log('v1 tables:',tables2)
           await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
         })
         console.log('DB original version was v0. No data stored; v1 schema  was applied.')
@@ -113,18 +137,10 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
         return
       } 
     }else{
+      // const tables = await db.getAllAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+      // console.log('v0 tables:', tables)
       console.log(`Migration steps do not exist for version ${currentDbVersion}`)
       return
     }
   }
 }
-
-/*
-await db.execAsync( `
-          PRAGMA journal_mode = WAL;
-          CREATE TABLE IF NOT EXIST new_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, amount TEXT NOT NULL, category TEXT NOT NULL, details TEXT, uid TEXT NOT NULL);
-          CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);
-          CREATE TABLE IF NOT EXISTS new_shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT, quantity TEXT);
-          CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
-        `)
-*/
