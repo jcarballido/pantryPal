@@ -17,11 +17,16 @@ interface EditItemModalProps{
   // parsedItemData: ParsedItemData
 }
 
+interface DetailsInterface{
+  [key:string]:string
+}
+
 interface FormData {
   name:string;
   category:string;
   amount:string;
-  [key: string] : string
+  details: DetailsInterface ;
+  newCategory?:string;
 }
 
 // interface DataFormatted {
@@ -35,7 +40,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   const { updateStoredItems } = useItemStore()
 
-  const requiredInputNames = [ 'name','category','amount' ]
+  const requiredInputNames:(keyof FormData)[] = [ 'name','category','amount' ]
   const db = useSQLiteContext()
 
   const { control, handleSubmit, reset, watch, formState:{ errors, touchedFields } } = useForm<FormData>()
@@ -46,6 +51,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   
   
   const inputValues = watch()
+  // console.log('Input values:', inputValues)
 
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -55,22 +61,23 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   
   useEffect(() => {
-    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
+    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues['amount'].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
     setRequiredFieldsEmpty(areRequiredFieldsEmpty)
   },[inputValues])
 
   useEffect(()=>{
     if(editModalVisible.item){
       console.log('Item passed in:', editModalVisible.item)
-      const { name, category, newCategory, amount, uid, ...rest } = editModalVisible.item.value
-      const detailNames = Object.keys(rest)      
+      const { name, category, amount, uid, details } = editModalVisible.item
+      console.log('Rest:', details)
+      const detailNames = Object.keys(details)      
       setAdditionalDetails([...detailNames])
     }
-  },[editModalVisible.item?.value])
+  },[editModalVisible.item])
 
   useEffect(()=>{
     if(editModalVisible.item){
-      reset(editModalVisible.item.value)
+      reset(editModalVisible.item)
     }
   },[additionalDetails])
   
@@ -116,6 +123,8 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     }
   }
 
+  console.log('Additional Details:', additionalDetails)
+
   return (
     <Modal visible={ editModalVisible.status } onRequestClose={() => {
       setEditModalVisible({status:false})
@@ -154,7 +163,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
                 required: true
               }}
               render={( { field:{ onChange, onBlur, value }} ) => (
-                <RequiredInput label='New Category' allowableWidth={calculatedWidth} placeholderText='Category A, Fridge, Left Cabinet Above Sink' onChange={onChange} onBlur={onBlur} value={value} />
+                <RequiredInput label='New Category' allowableWidth={calculatedWidth} placeholderText='Category A, Fridge, Left Cabinet Above Sink' onChange={onChange} onBlur={onBlur} value={value || ''} />
               ) }
             />}
           { (inputValues['category'] === 'New Category' && touchedFields.newCategory && (inputValues['newCategory']) === '' || (inputValues['category'] === 'New Category' && touchedFields.newCategory && inputValues['newCategory'] === undefined)) && <Text>Category is a required field.</Text> }
@@ -171,11 +180,11 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
           { touchedFields.amount && (inputValues['amount'] === '' || inputValues['amount'] === undefined) && <Text>Amount is a required field.</Text> }
           <Text className='text-xl mt-5 mb-4'>Additional Details</Text>
           {
-            additionalDetails.map( detail => {
+            additionalDetails.map( (detail, index) => {
               return(
                 <Controller
                   key={detail}
-                  name={`${detail}`}
+                  name={`details.${detail}`}
                   control={control}
                   render={( { field:{ onChange, onBlur, value }} ) => (
                     <AdditionalInput detail={detail} handleNewDetailRemoval={handleNewDetailRemoval} allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
