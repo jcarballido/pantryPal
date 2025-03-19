@@ -3,7 +3,9 @@ export interface ItemData {
   amount: string;
   category: string;
   uid: string;
-  [key: string]: string ;
+  id:string;
+  details:{[key: string]: string};
+  
 }
 
 interface NeededItemData{

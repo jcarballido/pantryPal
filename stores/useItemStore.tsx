@@ -29,7 +29,7 @@ const useItemStore = create<ItemState>()((set) => ({
   setStoredItems: ( data ) => set({allStoredItems:data}),
   setSavedCategories: (data) => set({savedCategories: data}),
   updateStoredItems: ( item ) => set(( state ) => ({
-    allStoredItems: state.allStoredItems.map( individualItem => JSON.stringify(individualItem.id) === (item.id) ? item:individualItem)
+    allStoredItems: state.allStoredItems.map( individualItem => individualItem.id === (item.id) ? item:individualItem)
   })),
   updateShoppingList: (neededItem) => set((state) => (
     {

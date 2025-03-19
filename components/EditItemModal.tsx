@@ -27,6 +27,8 @@ interface FormData {
   amount:string;
   details: DetailsInterface ;
   newCategory?:string;
+  uid:string;
+  id:string;
 }
 
 // interface DataFormatted {
@@ -69,7 +71,6 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     if(editModalVisible.item){
       console.log('Item passed in:', editModalVisible.item)
       const { name, category, amount, uid, details } = editModalVisible.item
-      console.log('Rest:', details)
       const detailNames = Object.keys(details)      
       setAdditionalDetails([...detailNames])
     }
@@ -90,11 +91,14 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   }
 
   const updateData = async(formattedData:ItemData, name:string) => {
+    console.log('Data to save to db:', formattedData)
+    const {name:itemName,amount,category,uid,details,id} = formattedData
     await db.withExclusiveTransactionAsync(async(txn) => {
-      await txn.runAsync('UPDATE item SET value = ? WHERE id = ?',[JSON.stringify(formattedData), JSON.stringify(editModalVisible.item?.id)])
+      await txn.runAsync('UPDATE item SET amount = ?,category = ?, name = ?, uid = ?, details = ? WHERE id = ?',[amount,category,itemName,uid,JSON.stringify(details), JSON.stringify(editModalVisible.item?.id)])
       await txn.runAsync('UPDATE item_fts SET name = ? WHERE item_id = ?', [ name, `${editModalVisible.item?.id}` ])
     })
-    updateStoredItems({id:JSON.stringify(editModalVisible.item?.id),value:formattedData})
+    if(editModalVisible.item) updateStoredItems({name,amount,category,uid,details, id})
+    // updateStoredItems({id:JSON.stringify(editModalVisible.item?.id),value:formattedData})
     // setSavedItems(prev => {
     //   const updatedItemsArray = prev.map( item => {
     //     if(item.id === editModalVisible.item?.id){
@@ -107,9 +111,9 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   }
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    const { name, category, amount, newCategory, uid, ...rest } = data
+    const { name, category, amount, newCategory, uid, details,id } = data
     console.log('Category + New Category: ', category, '+', newCategory)
-    const dataFormatted:ItemData = {name, amount,category:'', uid , ...rest}
+    const dataFormatted:ItemData = {name, amount,category:'', uid , details,id}
     if(newCategory){
       dataFormatted['category'] = newCategory
     }else{
@@ -123,7 +127,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     }
   }
 
-  console.log('Additional Details:', additionalDetails)
+  // console.log('Additional Details:', additionalDetails)
 
   return (
     <Modal visible={ editModalVisible.status } onRequestClose={() => {
