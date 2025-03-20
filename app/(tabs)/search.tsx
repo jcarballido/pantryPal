@@ -25,8 +25,8 @@ export default function search() {
 
   useEffect(() => {
     const categories: string[] = Array.from(new Set(allStoredItems.map(item => {
-      if(item.value.category === 'New Category' && typeof(item.value.newCategory) === 'string') return item.value.newCategory
-      return item.value.category
+      // if(item.category === 'New Category' && typeof(item.newCategory) === 'string') return item.value.newCategory
+      return item.category
     })))
     categories.sort((a,b) => a.localeCompare(b))
     setStoredCategories([...categories])    

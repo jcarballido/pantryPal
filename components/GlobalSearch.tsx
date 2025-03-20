@@ -54,7 +54,7 @@ export default function GlobalSearch({ setSearchResult }: Props) {
 
   const searchCategoryItems = (value:string) => {
     const fuseOptions = {
-      keys:[ "value.name" ]
+      keys:[ "name" ]
     }
     const fuse = new Fuse(allStoredItems,fuseOptions)
     return fuse.search(value).map( results => results.item.id)
