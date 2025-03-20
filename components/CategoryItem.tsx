@@ -33,7 +33,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
   }
 
   const handleEdit = (item:ParsedItemData) => {
-    console.log('Item passed in:', item)
+    // console.log('Item passed in:', item)
     setEditModalVisible({status: true, item:item})
   }
 

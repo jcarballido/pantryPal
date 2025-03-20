@@ -57,9 +57,13 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   const handleAddingNewField = () => {
     if(newDetailName === '') return
-    setAdditionalDetails(prevArr => [ ...prevArr, newDetailName ])
+    setAdditionalDetails(prevArr => {
+      console.log('Prev arr:', prevArr )
+      return [ ...prevArr, newDetailName ]})
     setNewDetailName('')
   }
+
+  
 
   
   useEffect(() => {
@@ -69,29 +73,36 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   useEffect(()=>{
     if(editModalVisible.item){
-      console.log('Item passed in:', editModalVisible.item)
+      // console.log('Item passed in:', editModalVisible.item)
       const { name, category, amount, uid, details } = editModalVisible.item
       const detailNames = Object.keys(details)      
+      reset(editModalVisible.item)
       setAdditionalDetails([...detailNames])
     }
   },[editModalVisible.item])
 
   useEffect(()=>{
     if(editModalVisible.item){
-      reset(editModalVisible.item)
+      // reset(editModalVisible.item)
     }
-  },[additionalDetails])
+  },[])
   
   const handleNewDetailRemoval = (detailString:string) => {
     setAdditionalDetails( prevArr => {
       const copy = [...prevArr]
-      const test = copy.filter( detail => JSON.stringify(detail) !== JSON.stringify(detailString) )
+
+      const test = copy.filter( detail => {
+        // console.log('Detail:', detail)
+        // console.log('Detial String:', detailString)
+        return JSON.stringify(detail) !== JSON.stringify(detailString) 
+      })
+      // console.log('New detail removal result:', test)
       return test
     })
   }
 
   const updateData = async(formattedData:ItemData, name:string) => {
-    console.log('Data to save to db:', formattedData)
+    // console.log('Data to save to db:', formattedData)
     const {name:itemName,amount,category,uid,details,id} = formattedData
     await db.withExclusiveTransactionAsync(async(txn) => {
       await txn.runAsync('UPDATE item SET amount = ?,category = ?, name = ?, uid = ?, details = ? WHERE id = ?',[amount,category,itemName,uid,JSON.stringify(details), JSON.stringify(editModalVisible.item?.id)])
@@ -112,8 +123,12 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const { name, category, amount, newCategory, uid, details,id } = data
-    console.log('Category + New Category: ', category, '+', newCategory)
-    const dataFormatted:ItemData = {name, amount,category:'', uid , details,id}
+    // console.log('Category + New Category: ', category, '+', newCategory)
+    const detailObj:{[key:string]:string} = {}  
+    const newDetails = additionalDetails.map(detailString => {
+      detailObj[detailString] = details[detailString]
+    })
+    const dataFormatted:ItemData = {name, amount,category:'', uid , details:detailObj,id}
     if(newCategory){
       dataFormatted['category'] = newCategory
     }else{
