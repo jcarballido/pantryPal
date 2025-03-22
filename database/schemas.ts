@@ -28,3 +28,9 @@ export const V1_SCHEMA = `
   RENAME to shopping_list_item;
 
 `
+
+export const V2_SCHEMA = `
+  PRAGMA journal_mode = WAL;
+  ALTER TABLE shopping_list_item
+  ADD COLUMN detail TEXT; 
+`

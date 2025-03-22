@@ -42,7 +42,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   const { updateStoredItems } = useItemStore()
 
-  const requiredInputNames:(keyof FormData)[] = [ 'name','category','amount' ]
+  const requiredInputNames:('name'|'category'|'amount')[] = [ 'name','category','amount' ]
   const db = useSQLiteContext()
 
   const { control, handleSubmit, reset, watch, formState:{ errors, touchedFields } } = useForm<FormData>()
@@ -67,7 +67,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
 
   
   useEffect(() => {
-    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues['amount'].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
+    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
     setRequiredFieldsEmpty(areRequiredFieldsEmpty)
   },[inputValues])
 

@@ -5,7 +5,7 @@ import RequiredInput from './RequiredInput';
 import AddAdditionalInput from '@/components/AddAdditionalInput'
 import AdditionalInput from './AdditionalInput';
 import { useSQLiteContext } from 'expo-sqlite';
-import { ParsedItemData, ParsedNeededItemData, RawItemData } from '@/sharedTypes/ItemType';
+import { ParsedItemData, ParsedNeededItemData, RawItemData, RawShoppingListItemData } from '@/sharedTypes/ItemType';
 import useItemStore from '@/stores/useItemStore';
 
 interface Props{
@@ -15,18 +15,19 @@ interface Props{
 interface FormData{
   name: string;
   quantity: string;
-  [key:string]: string;
+  details : {[key:string]:string};
 }
+
 interface DataFormatted {
   name: string;
   quantity: string;
-  [key:string]: string 
+  details:{[key: string]: string} 
 }
 
 
 export default function  AddShoppingListItemModal({visible, setVisible}: Props) {
  
-  const requiredInputNames = ['name','quantity']
+  const requiredInputNames:('name'|'quantity')[] = ['name','quantity']
   
   const { control, handleSubmit, reset, watch } = useForm<FormData>()
   const inputValues = watch()
@@ -36,9 +37,9 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
   const db = useSQLiteContext()  
   const { addToShoppingList } = useItemStore()  
-
+  
   useEffect(() => {
-    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
+    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === ''   )
     setRequiredFieldsEmpty(areRequiredFieldsEmpty)
   },[inputValues])
 
@@ -57,14 +58,14 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
     })
   }
 
-  const insertNewItem = async(formattedData:{[key:string]:string},name:string) => {
+  const insertNewItem = async(formattedData:DataFormatted) => {
     await db.withExclusiveTransactionAsync( async(txn) => {
       // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
-      const returnData = await txn.runAsync('INSERT INTO shopping_list_item(value) VALUES(?) RETURNING *',JSON.stringify(formattedData))
+      const returnData = await txn.runAsync('INSERT INTO shopping_list_item(name, quantity,details) VALUES(?,?,?) RETURNING *',formattedData.name,formattedData.quantity,JSON.stringify(formattedData.details))
       const lastInsertId = returnData.lastInsertRowId
-      const getLastInsertedRowIdData: RawItemData[] = await txn.getAllAsync('SELECT * FROM shopping_list_item WHERE id = ?;',[lastInsertId])
-      const { id, value } = getLastInsertedRowIdData[0]
-      const parsedData: ParsedNeededItemData = {id, value:JSON.parse(value)}
+      const getLastInsertedRowIdData: RawShoppingListItemData[] = await txn.getAllAsync('SELECT * FROM shopping_list_item WHERE id = ?;',[lastInsertId])
+      const { id, name, quantity, details } = getLastInsertedRowIdData[0]
+      const parsedData: ParsedNeededItemData = {id,name,quantity, details:JSON.parse(details)}
       console.log('Parsed Data:', parsedData)
       await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
       addToShoppingList(parsedData)
@@ -77,11 +78,11 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
 
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    const { name, quantity, ...rest } = data
-    const dataFormatted:DataFormatted = {name, quantity, ...rest}
+    const { name, quantity, details } = data
+    const dataFormatted:DataFormatted = {name, quantity, details}
     console.log('Formatted Data:', dataFormatted)
     try{
-      await insertNewItem(dataFormatted, name)
+      await insertNewItem(dataFormatted)
     }catch(e){
       console.log('Error inserting data:', e)
     }
@@ -107,7 +108,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
           additionalDetails.map( detail => {
             return(
               <Controller
-              name={`${detail}`}
+              name={`details.${detail}`}
               control={control}
               render={( { field:{ onChange, onBlur, value }} ) => (
                 <AdditionalInput detail={detail} handleNewDetailRemoval={handleNewDetailRemoval} allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />

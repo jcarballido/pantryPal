@@ -90,9 +90,14 @@ export default function index() {
     }
   }
 
-  const handleConsoleLog = () => {
+  const handleConsoleLog = async() => {
     const allItems = db.getAllSync('SELECT * FROM item')
-    console.log('All items in db', allItems)
+    const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
+    console.log('All items in stored item db', allItems)
+    console.log('All items in stored shopping list db', allShoppingItems)
+    const tables2 = await db.getAllAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+    console.log('v1 tables:',tables2)
+
   }
 
   const handleDeleteFTSData = () => {

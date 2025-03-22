@@ -25,7 +25,9 @@ export interface ParsedItemData {
 
 export interface ParsedNeededItemData {
   id: string;
-  value: NeededItemData;
+  name: string;
+  quantity: string;
+  details: {[key:string]:string}
 }
 
 export interface RawItemData{
@@ -39,7 +41,9 @@ export interface RawItemData{
 
 export interface RawShoppingListItemData {
   id: string;
-  value: string;
+  name: string;
+  quantity: string;
+  details: string;
 }
 
 export interface NeededItem{

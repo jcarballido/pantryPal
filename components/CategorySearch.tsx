@@ -51,7 +51,7 @@ export default function CategorySearch({defaultValue, customStyle, categorySpeci
 
   const searchCategoryItems = (value:string) => {
     const fuseOptions = {
-      keys:[ "value.name" ]
+      keys:[ "name" ]
     }
     const fuse = new Fuse(categorySpecificItems,fuseOptions)
     return fuse.search(value).map( results => results.item.id)

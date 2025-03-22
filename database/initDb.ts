@@ -15,15 +15,17 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
         CREATE TABLE IF NOT EXISTS new_shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT, quantity TEXT);
         CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
       `)
-      const parsedItems = parseStoredItems(storedItems)
-      const parsedShoppingListItems = parseStoredShoppingListItems(storedShoppingList)
-      for(const item of parsedItems){
-        const {name,amount,category,uid,details} = item
-        await txn.runAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)',name, amount, category,uid,details)
-      }
-      for(const item of parsedShoppingListItems){
-        const {name,details} = item
-        await txn.runAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)',name, details)
+      if(storedItems && storedShoppingList){
+        const parsedItems = parseStoredItems(storedItems)
+        const parsedShoppingListItems = parseStoredShoppingListItems(storedShoppingList)
+        for(const item of parsedItems){
+          const {name,amount,category,uid,details} = item
+          await txn.runAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)',name, amount, category,uid,details)
+        }
+        for(const item of parsedShoppingListItems){
+          const {name,details} = item
+          await txn.runAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)',name, details)
+        }
       }
       await txn.execAsync(`
         DROP TABLE IF EXISTS item;
@@ -36,7 +38,17 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
       await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
     })
     return
-  } 
+  },
+  2: async(db, storedItems, storedShoppingList) => {
+    await db.withExclusiveTransactionAsync( async(txn)=>{
+      await txn.execAsync(`
+        ALTER TABLE shopping_list_item
+        ADD COLUMN details TEXT;
+        PRAGMA user_version = ${CURRENT_VERSION};
+      `)
+    })
+    return
+  }
 }
 
 const getAllStoredData = async(db: SQLiteDatabase) => {
@@ -63,9 +75,8 @@ const parseStoredItems = (arr: RawItemData[]): { name: string, category: string,
 const parseStoredShoppingListItems = (arr: RawShoppingListItemData[]): { name: string, quantity: string, details: string }[] => {
   const parsedShoppingListItems = arr.map( rawItem => {
     // const parsed = JSON.parse(rawItem.value)
-    const { name, quantity, ...rest } = JSON.parse(rawItem.value)
-    const details =  {...rest}
-    return { name, quantity, details: JSON.stringify(details) }
+    const { name, quantity, details } = rawItem
+    return { name, quantity, details: JSON.parse(details) }
   }) 
 
   return parsedShoppingListItems
@@ -103,27 +114,27 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
   const { storedItems, storedShoppingList } = storedData
 
   while(currentDbVersion <= CURRENT_VERSION){
-    if(currentDbVersion == 0 && storedItems.length === 0 && storedShoppingList.length === 0){
-      try{
-        await db.withExclusiveTransactionAsync( async(txn) => {
-          console.log('Current version determined as v0.')
-          // const dbList = await txn.getFirstAsync('PRAGMA database_list')
-          //   const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-          //   console.log('v0 tables:', tables)
-          await txn.execAsync(V1_SCHEMA);    
-          // const tables2 = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-          // console.log('v1 tables:',tables2)
-          await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
-        })
-        console.log('DB original version was v0. No data stored; v1 schema  was applied.')
-        return
-      }catch(e){
-        console.log(`Error migrating to the latest schema - v${CURRENT_VERSION}:`, e)
-        console.log('Schema set to original - v0.')
-        await db.execAsync(V0_SCHEMA)    
-        return      
-      }
-    }
+    // if(currentDbVersion == 0 && storedItems.length === 0 && storedShoppingList.length === 0){
+    //   try{
+    //     await db.withExclusiveTransactionAsync( async(txn) => {
+    //       console.log('Current version determined as v0.')
+    //       // const dbList = await txn.getFirstAsync('PRAGMA database_list')
+    //       //   const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+    //       //   console.log('v0 tables:', tables)
+    //       await txn.execAsync(V1_SCHEMA);    
+    //       // const tables2 = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
+    //       // console.log('v1 tables:',tables2)
+    //       await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+    //     })
+    //     console.log('DB original version was v0. No data stored; v1 schema  was applied.')
+    //     return
+    //   }catch(e){
+    //     console.log(`Error migrating to the latest schema - v${CURRENT_VERSION}:`, e)
+    //     console.log('Schema set to original - v0.')
+    //     await db.execAsync(V0_SCHEMA)    
+    //     return      
+    //   }
+    // }
     ++currentDbVersion 
     const migrationFn = MIGRATION_STEPS[currentDbVersion]
     if( migrationFn ) {

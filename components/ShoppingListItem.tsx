@@ -9,12 +9,13 @@ interface Props {
 
 export default function ShoppingListItem({item}:Props) {
 
-  const { id, value } = item
-  const { name, quantity, ...rest } = value
-
+  const { id, name,quantity,details } = item
+  // const { name, quantity, ...rest } = value
+  console.log('Details from shopping list item: ', details)
   return (
     <View>
       <Text>{name}</Text>
+      <Text>{quantity}</Text>
     </View>
   )
 }
