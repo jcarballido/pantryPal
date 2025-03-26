@@ -10,10 +10,16 @@ import AddShoppingListItemModal from '@/components/AddShoppingListItemModal'
 
 export default function list() {
 
-  const { shoppingList, setShoppingList } = useItemStore()
+  const { shoppingList, setShoppingList, deleteFromShoppingList } = useItemStore()
   const db = useSQLiteContext()
 
   const [ visible, setVisible ] = useState<{status:boolean}>({status:false})
+  const [ deleteMode, setDeleteMode ] = useState<{status:boolean}>({status:false})
+  const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
+  
+  const enableDelete = () => {
+    setDeleteMode({status:true})
+  }
 
   useEffect(() => {
     const fetchData = async() => {
@@ -32,10 +38,49 @@ export default function list() {
     setVisible(prev => {return { status: !(prev.status) }})
   }
 
+  const disableDelete = () => {
+    setDeleteMode({status:false})
+  }
+
+
+  const handleDelete =  async() => {
+    const placeHolders = itemsMarkedForDeletion.map(id => {return '?'}).join()
+
+    try {
+      await db.runAsync(`DELETE FROM shopping_list_item WHERE id IN (${placeHolders})`,itemsMarkedForDeletion)
+      deleteFromShoppingList(itemsMarkedForDeletion)
+      // setSavedItems( prev => {
+      //   const filteredPrevState = prev.filter((item:ParsedItemData) => !itemsMarkedForDeletion.includes(parseInt(item.id)))
+      //   return filteredPrevState
+      // })
+      setItemsMarkedForDeletion([])
+      setDeleteMode({status:false})
+      // console.log('Selected Category:', selectedCategory)
+      // console.log('Number of items in category:', numItemsByCateogry)
+      // console.log('Stored Categories:', storedCategories)
+    } catch (e) {
+      console.log('Error processing delelte:', e)
+    }
+  }
+
+
 
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <AddShoppingListItemModal visible={visible} setVisible={setVisible} />
+      <View className='flex items-center justify-center mr-4'>
+        {
+          deleteMode.status
+          ? 
+            <View className='flex flex-row gap-5'>
+              <Text onPress={handleDelete}>Confirm</Text>
+              <Pressable onPress={disableDelete}><Text>Cancel</Text></Pressable>
+            </View>
+          : <Pressable onPress={enableDelete}>
+              <Text>Delete</Text>
+            </Pressable>
+        }
+      </View>
       <Text className='self-center m-10'> Shopping List </Text>
       <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
         <Text className='text-zinc-200'>Add Item</Text>
@@ -45,7 +90,7 @@ export default function list() {
           data={shoppingList}
           renderItem={({item})=>{
             return(
-              <ShoppingListItem item={item} />
+              <ShoppingListItem item={item} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion}/>
             )
           }}
         />
