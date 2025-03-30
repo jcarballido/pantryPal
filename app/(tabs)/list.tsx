@@ -15,7 +15,9 @@ export default function list() {
 
   const [ visible, setVisible ] = useState<{status:boolean}>({status:false})
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean}>({status:false})
+  const [ saveMode, setSaveMode ] = useState<{status:boolean}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
+  const [ itemsMarkedForSaving, setItemsMarkedForSaving  ] = useState<number[]>([])
   
   const enableDelete = () => {
     setDeleteMode({status:true})
@@ -40,6 +42,14 @@ export default function list() {
 
   const disableDelete = () => {
     setDeleteMode({status:false})
+  }
+
+  const disableSave = () => {
+    setSaveMode({status:false})
+  }
+
+  const enableSave = () => {
+    setSaveMode({status: true})
   }
 
 
@@ -90,7 +100,7 @@ export default function list() {
           data={shoppingList}
           renderItem={({item})=>{
             return(
-              <ShoppingListItem item={item} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion}/>
+              <ShoppingListItem item={item} saveMode={saveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} itemsMarkedForSaving={itemsMarkedForSaving} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion}/>
             )
           }}
         />

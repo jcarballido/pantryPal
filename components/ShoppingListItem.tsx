@@ -29,15 +29,19 @@ interface CategoryItemProps {
   item: ParsedNeededItemData;
   // setEditModalVisible: React.Dispatch<SetStateAction<{ status:boolean; item?:ParsedNeededItemData }>>;
   deleteMode: { status:boolean, category?: string };
+  saveMode: { status:boolean };
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>;
-  itemsMarkedForDeletion: number[]  
+  setItemsMarkedForSaving: React.Dispatch<SetStateAction<number[]>>;
+  itemsMarkedForDeletion: number[];  
+  itemsMarkedForSaving: number[];
 }
 
-export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion}: CategoryItemProps) {
+export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, saveMode, itemsMarkedForSaving, setItemsMarkedForSaving }: CategoryItemProps) {
 
   // const [ show, setShow ] = useState({status:false})
   const [ isFlagged, setIsFlagged ] = useState(false)
-  const [ isChecked, setIsChecked ] = useState(false)
+  const [ isCheckedForDeletion, setIsCheckedForDeletion ] = useState(false)
+  const [ isCheckedForSaving, setIsCheckedForSaving ] = useState(false)
   const { id, name,quantity } = item
   // const itemId = item.id
   
@@ -49,10 +53,10 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
   //   descriptors.push([key,value])
   // }
 
-  const handleFlag = () => {
+  // const handleFlag = () => {
     
-    setIsFlagged(!isFlagged )
-  }
+  //   setIsFlagged(!isFlagged )
+  // }
 
   // const handleEdit = (item:ParsedNeededItemData) => {
   //   // console.log('Item passed in:', item)
@@ -60,13 +64,13 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
   // }
 
   const handleCheck = () => {
-    if(isChecked){
+    if(isCheckedForDeletion){
       const updatedArray = itemsMarkedForDeletion.filter( itemId => parseInt(item.id) !== itemId)
       setItemsMarkedForDeletion(updatedArray)
     }else{
       setItemsMarkedForDeletion(prev => [...prev, parseInt(item.id)])
     }
-    setIsChecked(prev => !prev)
+    setIsCheckedForDeletion(prev => !prev)
   }
 
   useEffect(() => {
@@ -74,8 +78,29 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
   }, [itemsMarkedForDeletion])
 
   useEffect(()=>{
-    if(itemsMarkedForDeletion.includes(parseInt(item.id))) setIsChecked(true) 
+    if(itemsMarkedForDeletion.includes(parseInt(item.id))) setIsCheckedForDeletion(true) 
   },[])
+
+  const handleCheckForDeletion = () => {
+    if(isCheckedForDeletion){
+      const updatedArray = itemsMarkedForDeletion.filter( itemId => parseInt(item.id) !== itemId)
+      setItemsMarkedForDeletion(updatedArray)
+    }else{
+      setItemsMarkedForDeletion(prev => [...prev, parseInt(item.id)])
+    }
+    setIsCheckedForDeletion(prev => !prev)
+  }
+
+  const handleCheckForSaving = () => {
+    if(isCheckedForSaving){
+      const updatedArray = itemsMarkedForSaving.filter( itemId => parseInt(item.id) !== itemId)
+      setItemsMarkedForSaving(updatedArray)
+    }else{
+      setItemsMarkedForSaving(prev => [...prev, parseInt(item.id)])
+    }
+    setIsCheckedForSaving(prev => !prev)
+  }
+
 
   const bodyText = 'text-dark-charcoal-gray text-lg font-bold'
   const subtleText = `${isFlagged? 'text-zinc-700':'text-zinc-400'} font-sm mb-2 flex-1`
@@ -124,9 +149,22 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
       {
         deleteMode.status
         ? <View className='mr-4 justify-center '>
-            <Pressable className='' onPress={handleCheck}>
+            <Pressable className='' onPress={handleCheckForDeletion}>
               {
-                isChecked
+                isCheckedForDeletion
+                ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
+                : <View className='size-8 bg-white rounded-lg'></View>
+              }
+            </Pressable>
+          </View>
+        : null
+      }
+      {
+        saveMode.status
+        ? <View className='mr-4 justify-center '>
+            <Pressable className='' onPress={handleCheckForSaving}>
+              {
+                isCheckedForSaving
                 ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
                 : <View className='size-8 bg-white rounded-lg'></View>
               }
