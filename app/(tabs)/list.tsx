@@ -7,6 +7,7 @@ import { useSQLiteContext } from 'expo-sqlite'
 import { NeededItem, ParsedNeededItemData, RawShoppingListItemData } from '@/sharedTypes/ItemType'
 import ShoppingListItem from '@/components/ShoppingListItem'
 import AddShoppingListItemModal from '@/components/AddShoppingListItemModal'
+import SaveModal from '@/components/SaveModal'
 
 export default function list() {
 
@@ -14,6 +15,7 @@ export default function list() {
   const db = useSQLiteContext()
 
   const [ visible, setVisible ] = useState<{status:boolean}>({status:false})
+  const [ saveModalVisible, setSaveModalVisible ] = useState<{status:boolean}>({status:false})
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean}>({status:false})
   const [ saveMode, setSaveMode ] = useState<{status:boolean}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
@@ -52,6 +54,9 @@ export default function list() {
     setSaveMode({status: true})
   }
 
+  const handleSave = async() => {
+    setSaveModalVisible({status: true})
+  }
 
   const handleDelete =  async() => {
     const placeHolders = itemsMarkedForDeletion.map(id => {return '?'}).join()
@@ -73,11 +78,10 @@ export default function list() {
     }
   }
 
-
-
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <AddShoppingListItemModal visible={visible} setVisible={setVisible} />
+      <SaveModal saveModalVisible={saveModalVisible} setSaveModalVisible={setSaveModalVisible} itemsMarkedForSaving={itemsMarkedForSaving} />
       <View className='flex items-center justify-center mr-4'>
         {
           deleteMode.status
@@ -88,6 +92,17 @@ export default function list() {
             </View>
           : <Pressable onPress={enableDelete}>
               <Text>Delete</Text>
+            </Pressable>
+        }
+        {
+          saveMode.status
+          ? 
+            <View className='flex flex-row gap-5'>
+              <Text onPress={handleSave}>Confirm</Text>
+              <Pressable onPress={disableSave}><Text>Cancel</Text></Pressable>
+            </View>
+          : <Pressable onPress={enableSave}>
+              <Text>Save</Text>
             </Pressable>
         }
       </View>
