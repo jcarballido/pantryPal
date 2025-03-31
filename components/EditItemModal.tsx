@@ -62,9 +62,6 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
       return [ ...prevArr, newDetailName ]})
     setNewDetailName('')
   }
-
-  
-
   
   useEffect(() => {
     const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))

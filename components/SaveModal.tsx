@@ -1,4 +1,4 @@
-import { View, Text, Modal, ScrollView, FlatList } from 'react-native'
+import { View, Text, Modal, ScrollView, FlatList, TextInput } from 'react-native'
 import React, { SetStateAction, useEffect, useState } from 'react'
 import useItemStore from '@/stores/useItemStore';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -23,8 +23,8 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
   const requiredInputNames = ['name', 'quantity']
   const { addItems } = useItemStore()
   const db = useSQLiteContext()
-  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
-  const inputValues = watch()
+  // const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
+  // const inputValues = watch()
   
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ newDetailName, setNewDetailName ] = useState('')
@@ -43,11 +43,6 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       return test
     })
   } 
-
-  useEffect(() => {
-    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
-    setRequiredFieldsEmpty(areRequiredFieldsEmpty)
-  },[inputValues])
 
   // const insertNewItem = async(formattedData:DataFormatted) => {
   //   await db.withExclusiveTransactionAsync( async(txn) => {
@@ -82,16 +77,52 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
 
   // Show each item and data from shopping list to be added
   // Display which category to save item to
-  
 
   return (
     <Modal visible={saveModalVisible.status} onRequestClose={()=>setSaveModalVisible({status: false})}>
       <FlatList
         data={itemsMarkedForSaving}
         renderItem={({item}) => {
+
+          const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
+
+          const inputValues = watch()
+
+          useEffect(() => {
+            const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
+            setRequiredFieldsEmpty(areRequiredFieldsEmpty)
+          },[inputValues])
+          
+          useEffect(()=>{
+            reset(item)
+          },[])
+
           return(
-            <View>
-              {item.name}
+            <View className='border-4'>
+              <Text>Name</Text>
+              <Controller
+                name='name'
+                control={control}
+                render={({field:{name, onChange, onBlur, value}}) => {
+                  return(
+                    <View className='border-2 border-red-600'>
+                      <TextInput>{value}</TextInput>
+                    </View>
+                  )
+                }}
+              />
+              <Text>Quantity</Text>
+              <Controller
+                name='quantity'
+                control={control}
+                render={({field:{name, onChange, onBlur, value}}) => {
+                  return(
+                    <View className='border-2 border-red-600'>
+                      <TextInput>{value}</TextInput>
+                    </View>
+                  )
+                }}
+              />
             </View>
           )
         }}
