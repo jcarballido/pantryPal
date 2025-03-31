@@ -89,8 +89,6 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
     reset()
   }
 
-
-
   return (
     <Modal visible={visible.status} onRequestClose={()=>setVisible({status:false})}>
       <ScrollView>

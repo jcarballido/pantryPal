@@ -19,7 +19,7 @@ export default function list() {
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean}>({status:false})
   const [ saveMode, setSaveMode ] = useState<{status:boolean}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
-  const [ itemsMarkedForSaving, setItemsMarkedForSaving  ] = useState<number[]>([])
+  const [ itemsMarkedForSaving, setItemsMarkedForSaving  ] = useState<ParsedNeededItemData[]>([])
   
   const enableDelete = () => {
     setDeleteMode({status:true})

@@ -31,9 +31,9 @@ interface CategoryItemProps {
   deleteMode: { status:boolean, category?: string };
   saveMode: { status:boolean };
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>;
-  setItemsMarkedForSaving: React.Dispatch<SetStateAction<number[]>>;
+  setItemsMarkedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
   itemsMarkedForDeletion: number[];  
-  itemsMarkedForSaving: number[];
+  itemsMarkedForSaving: ParsedNeededItemData[];
 }
 
 export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, saveMode, itemsMarkedForSaving, setItemsMarkedForSaving }: CategoryItemProps) {
@@ -93,10 +93,10 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
 
   const handleCheckForSaving = () => {
     if(isCheckedForSaving){
-      const updatedArray = itemsMarkedForSaving.filter( itemId => parseInt(item.id) !== itemId)
+      const updatedArray = itemsMarkedForSaving.filter( itemMarked => itemMarked.id !== item.id)
       setItemsMarkedForSaving(updatedArray)
     }else{
-      setItemsMarkedForSaving(prev => [...prev, parseInt(item.id)])
+      setItemsMarkedForSaving(prev => [...prev, item])
     }
     setIsCheckedForSaving(prev => !prev)
   }
