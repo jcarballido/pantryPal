@@ -4,6 +4,7 @@ import useItemStore from '@/stores/useItemStore';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Controller, useForm } from 'react-hook-form';
 import { ParsedNeededItemData } from '@/sharedTypes/ItemType';
+import SaveModalInput from './SaveModalInput';
 
 interface Props{
   saveModalVisible: {status: boolean};
@@ -11,16 +12,8 @@ interface Props{
   itemsMarkedForSaving: ParsedNeededItemData[]
 }
 
-interface FormData {
-  name:string;
-  amount:string;
-  [key: string] : string
-}
-
-
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
 
-  const requiredInputNames = ['name', 'quantity']
   const { addItems } = useItemStore()
   const db = useSQLiteContext()
   // const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
@@ -28,7 +21,6 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
   
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ newDetailName, setNewDetailName ] = useState('')
-  const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
   
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -42,7 +34,8 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       const test = copy.filter( detail => JSON.stringify(detail) !== JSON.stringify(detailString) )
       return test
     })
-  } 
+  }
+   
 
   // const insertNewItem = async(formattedData:DataFormatted) => {
   //   await db.withExclusiveTransactionAsync( async(txn) => {
@@ -83,47 +76,8 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       <FlatList
         data={itemsMarkedForSaving}
         renderItem={({item}) => {
-
-          const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
-
-          const inputValues = watch()
-
-          useEffect(() => {
-            const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
-            setRequiredFieldsEmpty(areRequiredFieldsEmpty)
-          },[inputValues])
-          
-          useEffect(()=>{
-            reset(item)
-          },[])
-
           return(
-            <View className='border-4'>
-              <Text>Name</Text>
-              <Controller
-                name='name'
-                control={control}
-                render={({field:{name, onChange, onBlur, value}}) => {
-                  return(
-                    <View className='border-2 border-red-600'>
-                      <TextInput>{value}</TextInput>
-                    </View>
-                  )
-                }}
-              />
-              <Text>Quantity</Text>
-              <Controller
-                name='quantity'
-                control={control}
-                render={({field:{name, onChange, onBlur, value}}) => {
-                  return(
-                    <View className='border-2 border-red-600'>
-                      <TextInput>{value}</TextInput>
-                    </View>
-                  )
-                }}
-              />
-            </View>
+            <SaveModalInput item={item} />
           )
         }}
       />
