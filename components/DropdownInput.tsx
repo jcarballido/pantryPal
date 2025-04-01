@@ -1,5 +1,5 @@
 import { View, Text, Pressable, LayoutChangeEvent } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ParsedItemData } from '@/sharedTypes/ItemType';
 
 interface Props{
@@ -7,7 +7,7 @@ interface Props{
   value: string;
   onChange:(value:string)=>void;
   setCalculatedWidth: React.Dispatch<React.SetStateAction<number | undefined>>;
-  storedCategories: string[]
+  storedCategories: string[]|{id:number, category:string}[]
 }
 
 export default function DropdownInput({styles,value,onChange, setCalculatedWidth, storedCategories}: Props) {
@@ -34,6 +34,10 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
     return
   }
 
+  useEffect(()=>{
+    console.log('Stored Categories:',storedCategories)
+  })
+
   return (
     <View className='flex-row flex-1 '>
       <View className='justify-center mb-4'>
@@ -48,11 +52,22 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
         <View className={`${expand ? '-mt-2 w-full scale-y-100 absolute top-full bg-white':'scale-y-0 hidden'} border-2 border-red-600`} >
           {
             storedCategories && storedCategories.map( category => {
-              return(
-                <Text key={category} className='m-2' onPress={()=>setVal(category)}>
-                  {category}
-                </Text>
-              )
+              console.log('Category registered as string:', category)
+              if(typeof category === 'string'){
+                return(
+                  <Text key={category} className='m-2' onPress={()=>setVal(category)}>
+                    {category}
+                  </Text>
+                )  
+              }
+              if(category.id){
+                console.log('Category registered as object:', category)
+                return(
+                  <Text key={category.id} className='m-2' onPress={()=>setVal(category.category)}>
+                    {category.category}
+                  </Text>
+                )  
+              }
             })
           }
           <Text className='m-2' onPress={()=> setVal('New Category')}>New Category</Text>

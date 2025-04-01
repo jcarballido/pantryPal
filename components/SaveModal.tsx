@@ -5,6 +5,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Controller, useForm } from 'react-hook-form';
 import { ParsedNeededItemData } from '@/sharedTypes/ItemType';
 import SaveModalInput from './SaveModalInput';
+import DropdownInput from './DropdownInput';
+import RequiredInput from './RequiredInput';
 
 interface Props{
   saveModalVisible: {status: boolean};
@@ -12,15 +14,22 @@ interface Props{
   itemsMarkedForSaving: ParsedNeededItemData[]
 }
 
+interface FormData {
+  category:string;
+  [key: string] : string
+}
+
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
 
-  const { addItems } = useItemStore()
+  const { addItems, savedCategories, setSavedCategories } = useItemStore()
   const db = useSQLiteContext()
-  // const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
-  // const inputValues = watch()
+  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
+  const inputValues = watch()
   
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ newDetailName, setNewDetailName ] = useState('')
+  const [ itemsPreparedForSaving, setItemsPreparedForSaving ] = useState<ParsedNeededItemData[]>([])
+  const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
   
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -36,6 +45,18 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
     })
   }
    
+  // useEffect(()=>{
+  //   console.log('Items marked for saving:', itemsMarkedForSaving)
+  // },[itemsMarkedForSaving])
+
+  //START HERE...
+
+  useEffect(()=>{
+
+  },[])
+  const consoleLogItemsToSave = () => {
+    console.log('Items to be saved:', )
+  }
 
   // const insertNewItem = async(formattedData:DataFormatted) => {
   //   await db.withExclusiveTransactionAsync( async(txn) => {
@@ -73,11 +94,33 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
 
   return (
     <Modal visible={saveModalVisible.status} onRequestClose={()=>setSaveModalVisible({status: false})}>
+      <Controller
+        name='category'
+        control={control}
+        rules={{
+          required: true
+        }}
+        render={ ({field:{ value, onChange }}) => (
+          <DropdownInput styles='' value={value} setCalculatedWidth={setCalculatedWidth} onChange={onChange} storedCategories={savedCategories} />
+        )}
+      />
+      { inputValues['category'] === 'New Category' && 
+        <Controller
+          name='newCategory'
+          control={control}
+          rules={{
+            required: true
+          }}
+          render={( { field:{ onChange, onBlur, value }} ) => (
+            <RequiredInput label='New Category' allowableWidth={calculatedWidth} placeholderText='Category A, Fridge, Left Cabinet Above Sink' onChange={onChange} onBlur={onBlur} value={value} />
+          ) }
+        />
+      }
       <FlatList
         data={itemsMarkedForSaving}
         renderItem={({item}) => {
           return(
-            <SaveModalInput item={item} />
+            <SaveModalInput item={item} setItemsPreparedForSaving={setItemsPreparedForSaving} />
           )
         }}
       />

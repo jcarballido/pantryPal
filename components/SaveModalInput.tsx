@@ -1,11 +1,12 @@
 import { View, Text, TextInput } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ParsedNeededItemData } from '@/sharedTypes/ItemType'
 import AdditionalInput from './AdditionalInput'
 
 interface Props{
-  item: ParsedNeededItemData
+  item: ParsedNeededItemData;
+  setItemsPreparedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
 }
 
 interface FormData {
@@ -15,7 +16,7 @@ interface FormData {
   details: {[key:string]:string}
 }
 
-const SaveModalInput = ({item}:Props) => {
+const SaveModalInput = ({item, setItemsPreparedForSaving}:Props) => {
 
   const requiredInputNames:('name'|'quantity')[] = ['name', 'quantity']
 
@@ -39,9 +40,11 @@ const SaveModalInput = ({item}:Props) => {
     if(item){
       // console.log('Item passed in:', editModalVisible.item)
       const { name, quantity, details } = item
-      const detailNames = Object.keys(details)      
+      if(details){
+        const detailNames = Object.keys(details)      
+        setAdditionalDetails([...detailNames])
+      }
       reset(item)
-      setAdditionalDetails([...detailNames])
     }
   },[item])
   

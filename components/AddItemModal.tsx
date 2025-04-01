@@ -19,7 +19,7 @@ type Props = {
   };
   setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>;
   // setSavedItems: React.Dispatch<React.SetStateAction<ParsedItemData[]>>;
-  storedCategories: string[]
+  storedCategories: string[]|{id:number, category:string}[]
   // setSuccessfulSubmission: boolean
 }
 
@@ -175,7 +175,8 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
               render={( { field:{ onChange, onBlur, value }} ) => (
                 <RequiredInput label='New Category' allowableWidth={calculatedWidth} placeholderText='Category A, Fridge, Left Cabinet Above Sink' onChange={onChange} onBlur={onBlur} value={value} />
               ) }
-            />}
+            />
+          }
           { (inputValues['category'] === 'New Category' && touchedFields.newCategory && (inputValues['newCategory']) === '' || (inputValues['category'] === 'New Category' && touchedFields.newCategory && inputValues['newCategory'] === undefined)) && <Text>Category is a required field.</Text> }
           <Controller
             name='amount'
