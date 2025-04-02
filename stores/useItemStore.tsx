@@ -6,8 +6,8 @@ type ID = ParsedItemData['id']
 interface ItemState{
   allStoredItems: ParsedItemData[];
   shoppingList: ParsedNeededItemData[];
-  savedCategories: {id: number, category:string}[];
-  setSavedCategories: (data: {id: number, category:string}[]) => void;
+  savedCategories: string[];
+  setSavedCategories: (data: string[]) => void;
   setShoppingList: (data: ParsedNeededItemData[]) => void;
   updateShoppingList: (updatedItem: ParsedNeededItemData)=> void;
   addToShoppingList: (neededItem: ParsedNeededItemData)=> void;
@@ -16,9 +16,9 @@ interface ItemState{
   updateStoredItems: (item: ParsedItemData) => void;
   addItems: (item: ParsedItemData) => void;
   deleteStoredItems: (idsToDeleteArray: number[]) => void;
-  addCategory:  (category: {id: number, category:string}) => void;
-  updatedCategory: (updatedCategory: {id: number, category: string}) => void;
-  deleteCategory: (categoryToDelete: {id: number, category: string}) => void;
+  addCategory:  (category:string) => void;
+  updatedCategory: (updatedCategory:  {oldCategory: string, update:string}) => void;
+  deleteCategory: (categoryToDelete: string) => void;
 }
 
 const useItemStore = create<ItemState>()((set) => ({
@@ -44,7 +44,7 @@ const useItemStore = create<ItemState>()((set) => ({
   })),
   deleteFromShoppingList:(idsToDelete) => set((state) => ({shoppingList:state.shoppingList.filter( individualItem => !idsToDelete.includes(parseInt(individualItem.id)))})),
   updatedCategory: (updatedCategory) => set((state) => ({
-    savedCategories: state.savedCategories.map( savedCategory => updatedCategory.id === savedCategory.id ? updatedCategory:savedCategory)
+    savedCategories: state.savedCategories.map( savedCategory => updatedCategory.oldCategory === savedCategory ? updatedCategory.update:savedCategory)
   })),
   deleteCategory:(categoryToDelete)=> set((state)=>({
     savedCategories: []

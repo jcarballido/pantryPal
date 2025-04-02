@@ -1,4 +1,4 @@
-import { View, Text, Modal, ScrollView, FlatList, TextInput } from 'react-native'
+import { View, Text, Modal, ScrollView, FlatList, TextInput, Pressable } from 'react-native'
 import React, { SetStateAction, useEffect, useState } from 'react'
 import useItemStore from '@/stores/useItemStore';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -21,7 +21,7 @@ interface FormData {
 
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
 
-  const { addItems, savedCategories, setSavedCategories } = useItemStore()
+  const { addItems, savedCategories, setSavedCategories, allStoredItems } = useItemStore()
   const db = useSQLiteContext()
   const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
   const inputValues = watch()
@@ -52,10 +52,22 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
   //START HERE...
 
   useEffect(()=>{
-
+    const categories = allStoredItems.map(item => {
+      return item.category
+    })
+    const uniqueCategories = [...new Set(categories)]
+    setSavedCategories(uniqueCategories)
   },[])
+
   const consoleLogItemsToSave = () => {
-    console.log('Items to be saved:', )
+    console.log('Items to be saved:', savedCategories)
+  }
+
+  const handlePress = () => {
+    console.log('Items to store:', itemsPreparedForSaving)
+    console.log('Category:', inputValues['category'])
+    if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
+    
   }
 
   // const insertNewItem = async(formattedData:DataFormatted) => {
@@ -124,6 +136,13 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
           )
         }}
       />
+      <View className='border-4 border-green-500'>
+        <Pressable onPress={handlePress}>
+          <Text>
+            Log
+          </Text>
+        </Pressable>
+      </View>
     </Modal>
   )
 }

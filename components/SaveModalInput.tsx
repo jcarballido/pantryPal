@@ -27,14 +27,26 @@ const SaveModalInput = ({item, setItemsPreparedForSaving}:Props) => {
   
   const inputValues = watch()
 
-  useEffect(() => {
-    const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '')
-    setRequiredFieldsEmpty(areRequiredFieldsEmpty)
-  },[inputValues])
+  // useEffect(() => {
+  //   const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '')
+  //   setRequiredFieldsEmpty(areRequiredFieldsEmpty)
+  // },[inputValues])
+
+  // useEffect(()=>{
+  //   if(item){
+  //     // console.log('Item passed in:', editModalVisible.item)
+  //     const { name, quantity, details } = item
+  //     if(details){
+  //       const detailNames = Object.keys(details)      
+  //       setAdditionalDetails([...detailNames])
+  //     }
+  //     setItemsPreparedForSaving(prev=>[...prev,{id:item.id,name:inputValues['name'], quantity:inputValues['quantity'],details:details}])  
+  //   }
+  // },[inpu])
   
-  useEffect(()=>{
-    reset(item)
-  },[])
+  // useEffect(()=>{
+  //   reset(item)
+  // },[])
 
   useEffect(()=>{
     if(item){
@@ -45,8 +57,9 @@ const SaveModalInput = ({item, setItemsPreparedForSaving}:Props) => {
         setAdditionalDetails([...detailNames])
       }
       reset(item)
+      setItemsPreparedForSaving(prev => [...prev,item])
     }
-  },[item])
+  },[])
   
 
   const handleNewDetailRemoval = (detailString:string) => {
