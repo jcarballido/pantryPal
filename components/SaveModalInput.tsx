@@ -4,33 +4,43 @@ import { Controller, useForm } from 'react-hook-form'
 import { ParsedNeededItemData } from '@/sharedTypes/ItemType'
 import AdditionalInput from './AdditionalInput'
 
-interface Props{
-  item: ParsedNeededItemData;
-  setItemsPreparedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
-}
-
 interface FormData {
+  // data: ParsedNeededItemData
   id: string;
   name: string;
   quantity: string;
   details: {[key:string]:string}
 }
 
-const SaveModalInput = ({item, setItemsPreparedForSaving}:Props) => {
+interface Props{
+  item: ParsedNeededItemData;
+  editItemForSaving: (data: FormData) => void;
+  // setItemsPreparedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
+}
+
+
+const SaveModalInput = ({item, editItemForSaving}:Props) => {
 
   const requiredInputNames:('name'|'quantity')[] = ['name', 'quantity']
 
-  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
+  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>({...item})
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
   
-  const inputValues = watch()
+  // const inputValues = watch()
 
   // useEffect(() => {
   //   const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '')
   //   setRequiredFieldsEmpty(areRequiredFieldsEmpty)
   // },[inputValues])
+
+  useEffect(()=>{
+    const subscription = watch((data) => {
+      editItemForSaving(data)
+    })
+    // return () => subscription.unsub
+  },[watch])
 
   // useEffect(()=>{
   //   if(item){
@@ -48,6 +58,10 @@ const SaveModalInput = ({item, setItemsPreparedForSaving}:Props) => {
   //   reset(item)
   // },[])
 
+  // useEffect(() => {
+  //   console.log(`Input Values for item id ${item.id}: `, inputValues )
+  // }, [inputValues])
+
   useEffect(()=>{
     if(item){
       // console.log('Item passed in:', editModalVisible.item)
@@ -57,10 +71,10 @@ const SaveModalInput = ({item, setItemsPreparedForSaving}:Props) => {
         setAdditionalDetails([...detailNames])
       }
       reset(item)
-      setItemsPreparedForSaving(prev => [...prev,item])
+      // setItemsPreparedForSaving(prev => [...prev,item])
     }
   },[])
-  
+  // dispatchEvent
 
   const handleNewDetailRemoval = (detailString:string) => {
     setAdditionalDetails( prevArr => {

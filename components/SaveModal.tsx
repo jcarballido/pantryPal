@@ -1,5 +1,5 @@
 import { View, Text, Modal, ScrollView, FlatList, TextInput, Pressable } from 'react-native'
-import React, { SetStateAction, useEffect, useState } from 'react'
+import React, { SetStateAction, useEffect, useRef, useState } from 'react'
 import useItemStore from '@/stores/useItemStore';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Controller, useForm } from 'react-hook-form';
@@ -14,21 +14,44 @@ interface Props{
   itemsMarkedForSaving: ParsedNeededItemData[]
 }
 
-interface FormData {
+interface ParentFormData {
   category:string;
   [key: string] : string
 }
+
+// interface FormData {
+//   // data: ParsedNeededItemData
+//   id: string;
+//   name: string;
+//   quantity: string;
+//   details: {[key:string]:string}
+// }
 
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
 
   const { addItems, savedCategories, setSavedCategories, allStoredItems } = useItemStore()
   const db = useSQLiteContext()
-  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
+  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<ParentFormData>()
+  const itemsPreparedForSaving = useRef<ParsedNeededItemData[]>([])
+
+  const editItemForSaving = (data:{id: string;
+      name: string;
+      quantity: string;
+      details: {[key:string]:string}
+    }) => {
+    const index = itemsPreparedForSaving.current.findIndex( savedItem => savedItem.id === data.id )
+    if(index !== -1){
+      itemsPreparedForSaving.current[index] = data
+    }else{
+      itemsPreparedForSaving.current.push(data)
+    }
+  }
+  
   const inputValues = watch()
   
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ newDetailName, setNewDetailName ] = useState('')
-  const [ itemsPreparedForSaving, setItemsPreparedForSaving ] = useState<ParsedNeededItemData[]>([])
+  // const [ itemsPreparedForSaving, setItemsPreparedForSaving ] = useState<ParsedNeededItemData[]>([])
   const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
   
   const handleAddingNewField = () => {
@@ -64,7 +87,7 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
   }
 
   const handlePress = () => {
-    console.log('Items to store:', itemsPreparedForSaving)
+    // console.log('Items to store:', itemsPreparedForSaving)
     console.log('Category:', inputValues['category'])
     if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
     
@@ -132,7 +155,7 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
         data={itemsMarkedForSaving}
         renderItem={({item}) => {
           return(
-            <SaveModalInput item={item} setItemsPreparedForSaving={setItemsPreparedForSaving} />
+            <SaveModalInput item={item} editItemForSaving={editItemForSaving} />
           )
         }}
       />
