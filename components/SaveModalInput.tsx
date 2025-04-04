@@ -23,7 +23,7 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
 
   const requiredInputNames:('name'|'quantity')[] = ['name', 'quantity']
 
-  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>({...item})
+  const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
@@ -36,10 +36,11 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
   // },[inputValues])
 
   useEffect(()=>{
-    const subscription = watch((data) => {
-      editItemForSaving(data)
+    const sub = watch(data => {
+      console.log('Input values:', data)
     })
-    // return () => subscription.unsub
+
+    return () => sub.unsubscribe()
   },[watch])
 
   // useEffect(()=>{
@@ -94,7 +95,7 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
         render={({field:{name, onChange, onBlur, value}}) => {
           return(
             <View className='border-2 border-red-600'>
-              <TextInput>{value}</TextInput>
+              <TextInput onChangeText={onChange}>{value}</TextInput>
             </View>
           )
         }}
@@ -106,7 +107,7 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
         render={({field:{name, onChange, onBlur, value}}) => {
           return(
             <View className='border-2 border-red-600'>
-              <TextInput>{value}</TextInput>
+              <TextInput onChangeText={onChange}>{value}</TextInput>
             </View>
           )
         }}
@@ -115,6 +116,7 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
         additionalDetails.map( detail => {
           return(
             <Controller
+            key={detail}
             name={`details.${detail}`}
             control={control}
             render={( { field:{ onChange, onBlur, value }} ) => (
