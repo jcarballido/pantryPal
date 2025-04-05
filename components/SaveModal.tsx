@@ -68,11 +68,9 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
     })
   }
    
-  // useEffect(()=>{
-  //   console.log('Items marked for saving:', itemsMarkedForSaving)
-  // },[itemsMarkedForSaving])
-
-  //START HERE...
+  useEffect(()=>{
+    console.log('Items marked for saving:', itemsMarkedForSaving)
+  },[itemsMarkedForSaving])
 
   useEffect(()=>{
     const categories = allStoredItems.map(item => {

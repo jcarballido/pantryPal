@@ -34,9 +34,10 @@ interface CategoryItemProps {
   setItemsMarkedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
   itemsMarkedForDeletion: number[];  
   itemsMarkedForSaving: ParsedNeededItemData[];
+  clearChecks: boolean;
 }
 
-export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, saveMode, itemsMarkedForSaving, setItemsMarkedForSaving }: CategoryItemProps) {
+export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, saveMode, itemsMarkedForSaving, setItemsMarkedForSaving, clearChecks }: CategoryItemProps) {
 
   // const [ show, setShow ] = useState({status:false})
   const [ isFlagged, setIsFlagged ] = useState(false)
@@ -63,41 +64,62 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
   //   setEditModalVisible({status: true, item:item})
   // }
 
-  const handleCheck = () => {
-    if(isCheckedForDeletion){
-      const updatedArray = itemsMarkedForDeletion.filter( itemId => parseInt(item.id) !== itemId)
-      setItemsMarkedForDeletion(updatedArray)
-    }else{
-      setItemsMarkedForDeletion(prev => [...prev, parseInt(item.id)])
-    }
-    setIsCheckedForDeletion(prev => !prev)
-  }
+  // const handleCheck = () => {
+  //   if(isCheckedForDeletion){
+  //     const updatedArray = itemsMarkedForDeletion.filter( itemId => parseInt(item.id) !== itemId)
+  //     setItemsMarkedForDeletion(updatedArray)
+  //   }else{
+  //     setItemsMarkedForDeletion(prev => [...prev, parseInt(item.id)])
+  //   }
+  //   setIsCheckedForDeletion(prev => !prev)
+  // }
 
-  useEffect(() => {
-    // console.log('Items checked:', itemsMarkedForDeletion)
-  }, [itemsMarkedForDeletion])
+  // useEffect(() => {
+  //   // console.log('Items checked:', itemsMarkedForDeletion)
+  // }, [itemsMarkedForDeletion])
+
+
+
+  // useEffect(()=>{
+  //   // if(itemsMarkedForDeletion.includes(parseInt(item.id))) setIsCheckedForDeletion(true)
+  //   setIsCheckedForDeletion(false)
+  //   setIsCheckedForSaving(false)  
+  // },[])
 
   useEffect(()=>{
-    if(itemsMarkedForDeletion.includes(parseInt(item.id))) setIsCheckedForDeletion(true) 
-  },[])
+    if(clearChecks) setIsCheckedForDeletion(false); setIsCheckedForSaving(false)
+  },[clearChecks])
 
-  const handleCheckForDeletion = () => {
+  useEffect(()=>{
+    if(isCheckedForSaving){
+      setItemsMarkedForSaving(prev => [...prev, item])
+    }else{
+      const updatedArray = itemsMarkedForSaving.filter( itemMarked => itemMarked.id !== item.id)
+      setItemsMarkedForSaving(updatedArray)
+    }
+  },[isCheckedForSaving])
+
+  useEffect(()=>{
     if(isCheckedForDeletion){
+      setItemsMarkedForDeletion(prev => [...prev, parseInt(item.id)])
+    }else{
       const updatedArray = itemsMarkedForDeletion.filter( itemId => parseInt(item.id) !== itemId)
       setItemsMarkedForDeletion(updatedArray)
-    }else{
-      setItemsMarkedForDeletion(prev => [...prev, parseInt(item.id)])
     }
+    // if(isCheckedForSaving){
+    //   const updatedArray = itemsMarkedForSaving.filter( itemMarked => itemMarked.id !== item.id)
+    //   setItemsMarkedForSaving(updatedArray)
+    // }else{
+    //   setItemsMarkedForSaving(prev => [...prev, item])
+    // }
+  },[isCheckedForDeletion])
+
+  const handleCheckForDeletion = () => {
     setIsCheckedForDeletion(prev => !prev)
   }
 
   const handleCheckForSaving = () => {
-    if(isCheckedForSaving){
-      const updatedArray = itemsMarkedForSaving.filter( itemMarked => itemMarked.id !== item.id)
-      setItemsMarkedForSaving(updatedArray)
-    }else{
-      setItemsMarkedForSaving(prev => [...prev, item])
-    }
+
     setIsCheckedForSaving(prev => !prev)
   }
 

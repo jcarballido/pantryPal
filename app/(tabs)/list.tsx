@@ -20,9 +20,11 @@ export default function list() {
   const [ saveMode, setSaveMode ] = useState<{status:boolean}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
   const [ itemsMarkedForSaving, setItemsMarkedForSaving  ] = useState<ParsedNeededItemData[]>([])
+  const [ clearChecks,setClearChecks ] = useState(false)
   
   const enableDelete = () => {
     setDeleteMode({status:true})
+    setClearChecks(false)
   }
 
   useEffect(() => {
@@ -44,14 +46,19 @@ export default function list() {
 
   const disableDelete = () => {
     setDeleteMode({status:false})
+    setItemsMarkedForDeletion([])
+    setClearChecks(true)
   }
 
   const disableSave = () => {
     setSaveMode({status:false})
+    setItemsMarkedForSaving([])
+    setClearChecks(true)
   }
 
   const enableSave = () => {
     setSaveMode({status: true})
+    setClearChecks(false)
   }
 
   const handleSave = async() => {
@@ -79,6 +86,11 @@ export default function list() {
       console.log('Error processing delelte:', e)
     }
   }
+
+  useEffect(()=>{
+    console.log('items marked for delete: ', itemsMarkedForDeletion)
+    console.log('items marked for save: ', itemsMarkedForSaving)
+  },[itemsMarkedForDeletion, itemsMarkedForSaving])
 
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
@@ -117,7 +129,7 @@ export default function list() {
           data={shoppingList}
           renderItem={({item})=>{
             return(
-              <ShoppingListItem item={item} saveMode={saveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} itemsMarkedForSaving={itemsMarkedForSaving} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion}/>
+              <ShoppingListItem item={item} saveMode={saveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} itemsMarkedForSaving={itemsMarkedForSaving} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} clearChecks={clearChecks} />
             )
           }}
         />

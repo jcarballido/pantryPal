@@ -38,6 +38,16 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
   useEffect(()=>{
     const sub = watch(data => {
       console.log('Input values:', data)
+        // console.log('Name: ', data.name)
+        // console.log('Quantity: ',data.quantity)
+        // console.log('Id: ', data.id)
+        // for(const i in data.details){
+        //   console.log(`Detail ${i}: `,data.details[i])
+        // }
+        additionalDetails.map( detail => {
+          console.log('Detail stored in state: ', detail)
+          if(data.details) console.log('Value of detail: ',data.details[detail])
+      })  
     })
 
     return () => sub.unsubscribe()
@@ -55,9 +65,9 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
   //   }
   // },[inpu])
   
-  // useEffect(()=>{
-  //   reset(item)
-  // },[])
+  useEffect(()=>{
+    reset(item)
+  },[])
 
   // useEffect(() => {
   //   console.log(`Input Values for item id ${item.id}: `, inputValues )
@@ -80,6 +90,8 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
   const handleNewDetailRemoval = (detailString:string) => {
     setAdditionalDetails( prevArr => {
       const copy = [...prevArr]
+      console.log('Item name: ', item.name)
+      console.log('Previous additional detail array: ',prevArr)
       const test = copy.filter( detail => JSON.stringify(detail) !== JSON.stringify(detailString) )
       return test
     })
