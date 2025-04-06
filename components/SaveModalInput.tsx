@@ -14,7 +14,11 @@ interface FormData {
 
 interface Props{
   item: ParsedNeededItemData;
-  editItemForSaving: (data: FormData) => void;
+  editItemForSaving: (data: {id: string;
+    name: string;
+    quantity: string;
+    details: {[key:string]:string}
+  }) => void;
   // setItemsPreparedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
 }
 
@@ -37,19 +41,22 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
 
   useEffect(()=>{
     const sub = watch(data => {
-      console.log('Input values:', data)
-        // console.log('Name: ', data.name)
-        // console.log('Quantity: ',data.quantity)
-        // console.log('Id: ', data.id)
-        // for(const i in data.details){
-        //   console.log(`Detail ${i}: `,data.details[i])
-        // }
-        additionalDetails.map( detail => {
-          console.log('Detail stored in state: ', detail)
-          if(data.details) console.log('Value of detail: ',data.details[detail])
-      })  
+      // Structure the object to save
+      const name = data.name?data.name:''
+      const quantity = data.quantity ? data.quantity:''
+      const id = data.id? data.id:''
+      const details:{[key:string]:string} = {}
+      console.log('Additional details: ',additionalDetails)
+      if(additionalDetails.length > 0) {
+        additionalDetails.map( (detail:string) => {
+        console.log(`Detail in additonal details for item ${item.name}: `,detail)
+        console.log('Value of detail: ', data.details?.detail)
+        if(data.details) details[detail] = data.details[`${detail}`] as string
+        })
+      }
+      editItemForSaving({id,quantity,name,details})
+      
     })
-
     return () => sub.unsubscribe()
   },[watch])
 
@@ -79,6 +86,7 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
       const { name, quantity, details } = item
       if(details){
         const detailNames = Object.keys(details)      
+        console.log(`Details in item ${item.name}: `, detailNames)
         setAdditionalDetails([...detailNames])
       }
       reset(item)

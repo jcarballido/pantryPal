@@ -87,11 +87,6 @@ export default function list() {
     }
   }
 
-  useEffect(()=>{
-    console.log('items marked for delete: ', itemsMarkedForDeletion)
-    console.log('items marked for save: ', itemsMarkedForSaving)
-  },[itemsMarkedForDeletion, itemsMarkedForSaving])
-
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <AddShoppingListItemModal visible={visible} setVisible={setVisible} />

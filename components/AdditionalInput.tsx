@@ -11,7 +11,7 @@ interface Props{
 }
 
 export default function AdditionalInput({ detail, handleNewDetailRemoval, allowableWidth, onChange, onBlur, value }: Props) {
-  console.log('Detail passed into additional input component: ',detail)
+  // console.log('Detail passed into additional input component: ',detail)
   return (
     <View className='flex-row items-center mb-4'>
       <Text style={{width:allowableWidth}} className=''>{ detail }</Text>

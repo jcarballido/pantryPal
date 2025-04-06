@@ -45,6 +45,7 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
     }else{
       itemsPreparedForSaving.current.push(data)
     }
+    // console.log('Items prepped for saving: ', itemsPreparedForSaving.current)
   }
   
   const inputValues = watch()
@@ -68,9 +69,9 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
     })
   }
    
-  useEffect(()=>{
-    console.log('Items marked for saving:', itemsMarkedForSaving)
-  },[itemsMarkedForSaving])
+  // useEffect(()=>{
+    // console.log('Items marked for saving:', itemsMarkedForSaving)
+  // },[itemsMarkedForSaving])
 
   useEffect(()=>{
     const categories = allStoredItems.map(item => {
@@ -84,10 +85,11 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
     console.log('Items to be saved:', savedCategories)
   }
 
-  const handlePress = () => {
+  const handleSave = () => {
     // console.log('Items to store:', itemsPreparedForSaving)
     console.log('Category:', inputValues['category'])
     if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
+    console.log('Items to store: ', itemsPreparedForSaving.current)
     
   }
 
@@ -158,7 +160,7 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
         }}
       />
       <View className='border-4 border-green-500'>
-        <Pressable onPress={handlePress}>
+        <Pressable onPress={handleSave}>
           <Text>
             Log
           </Text>

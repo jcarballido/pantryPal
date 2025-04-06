@@ -66,7 +66,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
       const getLastInsertedRowIdData: RawShoppingListItemData[] = await txn.getAllAsync('SELECT * FROM shopping_list_item WHERE id = ?;',[lastInsertId])
       const { id, name, quantity, details } = getLastInsertedRowIdData[0]
       const parsedData: ParsedNeededItemData = {id,name,quantity, details:JSON.parse(details)}
-      console.log('Parsed Data:', parsedData)
+      // console.log('Parsed Data:', parsedData)
       await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
       addToShoppingList(parsedData)
       // setSavedItems((prevArray):ParsedItemData[] => {
@@ -80,7 +80,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const { name, quantity, details } = data
     const dataFormatted:DataFormatted = {name, quantity, details}
-    console.log('Formatted Data:', dataFormatted)
+    // console.log('Formatted Data:', dataFormatted)
     try{
       await insertNewItem(dataFormatted)
     }catch(e){
