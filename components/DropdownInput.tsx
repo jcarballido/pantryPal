@@ -26,9 +26,9 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
 
   const calculateWidth = ( event: LayoutChangeEvent ) => {
     if( setCalculatedWidth ){
-      console.log('Calculated Width ran')
+      // console.log('Calculated Width ran')
       const { width } = event.nativeEvent.layout
-      console.log('Width:',' ',`w-[${Math.ceil(width)}]`)
+      // console.log('Width:',' ',`w-[${Math.ceil(width)}]`)
       setCalculatedWidth(Math.ceil(width))
     }
     return

@@ -1,5 +1,5 @@
 import { View, Text, TextInput } from 'react-native'
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import React, { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ParsedNeededItemData } from '@/sharedTypes/ItemType'
 import AdditionalInput from './AdditionalInput'
@@ -22,8 +22,11 @@ interface Props{
   // setItemsPreparedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
 }
 
+export interface CollectFormInput{
+  getFormData: () => {id:string,name:string,quantity:string, details:{[key:string]:string}};
+}
 
-const SaveModalInput = ({item, editItemForSaving}:Props) => {
+const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSaving}, ref) => {
 
   const requiredInputNames:('name'|'quantity')[] = ['name', 'quantity']
 
@@ -40,25 +43,41 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
   // },[inputValues])
 
   useEffect(()=>{
-    const sub = watch(data => {
-      // Structure the object to save
-      const name = data.name?data.name:''
-      const quantity = data.quantity ? data.quantity:''
-      const id = data.id? data.id:''
-      const details:{[key:string]:string} = {}
-      console.log('Additional details: ',additionalDetails)
-      if(additionalDetails.length > 0) {
-        additionalDetails.map( (detail:string) => {
-        console.log(`Detail in additonal details for item ${item.name}: `,detail)
-        console.log('Value of detail: ', data.details?.detail)
-        if(data.details) details[detail] = data.details[`${detail}`] as string
-        })
+    if(item){
+      console.log('Item detected.')
+      // console.log('Item passed in:', editModalVisible.item)
+      const { name, quantity, details } = item
+      if(details){
+        const detailNames = Object.keys(details)      
+        console.log(`Details in item ${item.name}: `, detailNames)
+        setAdditionalDetails([...detailNames])
       }
-      editItemForSaving({id,quantity,name,details})
+      reset(item)
+      // setItemsPreparedForSaving(prev => [...prev,item])
+    }
+  },[])
+  // useEffect(()=>{
+  //   const sub = watch(data => {
+  //     const input = watch()
+  //     console.log('')
+  //     // // Structure the object to save
+  //     // const name = data.name?data.name:''
+  //     // const quantity = data.quantity ? data.quantity:''
+  //     // const id = data.id? data.id:''
+  //     // const details:{[key:string]:string} = {}
+  //     // console.log('Additional details: ',additionalDetails)
+  //     // // if(additionalDetails.length > 0) {
+  //     //   additionalDetails.map( (detail:string) => {
+  //     //   console.log(`Detail in additonal details for item ${item.name}: `,detail)
+  //     //   console.log('Value of detail: ', data.details?.detail)
+  //     //   if(data.details) details[detail] = data.details[`${detail}`] as string
+  //     //   })
+  //     // // }
+  //     // editItemForSaving({id,quantity,name,details})
       
-    })
-    return () => sub.unsubscribe()
-  },[watch])
+  //   })
+  //   return () => sub.unsubscribe()
+  // },[watch])
 
   // useEffect(()=>{
   //   if(item){
@@ -72,27 +91,14 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
   //   }
   // },[inpu])
   
-  useEffect(()=>{
-    reset(item)
-  },[])
+  // useEffect(()=>{
+  //   reset(item)
+  // },[])
 
   // useEffect(() => {
   //   console.log(`Input Values for item id ${item.id}: `, inputValues )
   // }, [inputValues])
 
-  useEffect(()=>{
-    if(item){
-      // console.log('Item passed in:', editModalVisible.item)
-      const { name, quantity, details } = item
-      if(details){
-        const detailNames = Object.keys(details)      
-        console.log(`Details in item ${item.name}: `, detailNames)
-        setAdditionalDetails([...detailNames])
-      }
-      reset(item)
-      // setItemsPreparedForSaving(prev => [...prev,item])
-    }
-  },[])
   // dispatchEvent
 
   const handleNewDetailRemoval = (detailString:string) => {
@@ -104,6 +110,16 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
       return test
     })
   } 
+
+  const capture = watch()
+
+  useImperativeHandle(ref, () => ({
+      getFormData: () => {
+        const capture = watch()
+        console.log(`Captured values from item ${item.name}:`, capture)
+        return {...capture}
+      }
+  }))
 
 
   return(
@@ -148,6 +164,6 @@ const SaveModalInput = ({item, editItemForSaving}:Props) => {
       }
     </View>
   )
-}
+})
 
 export default SaveModalInput

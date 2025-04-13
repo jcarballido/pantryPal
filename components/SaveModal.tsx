@@ -4,7 +4,7 @@ import useItemStore from '@/stores/useItemStore';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Controller, useForm } from 'react-hook-form';
 import { ParsedNeededItemData } from '@/sharedTypes/ItemType';
-import SaveModalInput from './SaveModalInput';
+import SaveModalInput, {CollectFormInput} from './SaveModalInput';
 import DropdownInput from './DropdownInput';
 import RequiredInput from './RequiredInput';
 
@@ -27,28 +27,33 @@ interface ParentFormData {
 //   details: {[key:string]:string}
 // }
 
+
+
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
 
   const { addItems, savedCategories, setSavedCategories, allStoredItems } = useItemStore()
   const db = useSQLiteContext()
   const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<ParentFormData>()
   const itemsPreparedForSaving = useRef<ParsedNeededItemData[]>([])
+  // const [itemsPreparedForSaving, setItemsPreparedForSaving] = useState<ParsedNeededItemData[]>([]) 
 
   const editItemForSaving = (data:{id: string;
       name: string;
       quantity: string;
       details: {[key:string]:string}
     }) => {
-    const index = itemsPreparedForSaving.current.findIndex( savedItem => savedItem.id === data.id )
-    if(index !== -1){
-      itemsPreparedForSaving.current[index] = data
-    }else{
-      itemsPreparedForSaving.current.push(data)
-    }
-    // console.log('Items prepped for saving: ', itemsPreparedForSaving.current)
+      const index = itemsPreparedForSaving.current.findIndex( savedItem => savedItem.id === data.id )
+      if(index !== -1){
+        itemsPreparedForSaving.current[index] = data
+      }else{
+        itemsPreparedForSaving.current.push(data)
+      }
+      console.log('Items prepped for saving: ', itemsPreparedForSaving.current)
   }
   
   const inputValues = watch()
+
+  const collectedValues = useRef<Record<string,CollectFormInput | null>>({})
   
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ newDetailName, setNewDetailName ] = useState('')
@@ -90,6 +95,35 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
     console.log('Category:', inputValues['category'])
     if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
     console.log('Items to store: ', itemsPreparedForSaving.current)
+    const category = inputValues['newCategory'] ? inputValues['newCategory'] : inputValues['category'] 
+    const allValues = itemsPreparedForSaving.current.map( item => {
+      // const {id} = item
+      const values = collectedValues.current[item.id]?.getFormData()
+      // console.log('Values returned from')
+      return {...values, category}
+    })
+    console.log('All values collected: ', allValues)
+  }
+
+  const handleLog = () => {
+    // console.log('Category:', inputValues['category'])
+    // if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
+    // console.log('Items to store: ', itemsPreparedForSaving.current)
+    // const category = inputValues['newCategory'] ? inputValues['newCategory'] : inputValues['category'] 
+    // const allValues = itemsPreparedForSaving.current.map( item => {
+    //   // const {id} = item
+    //   const values = collectedValues.current[item.id]?.getFormData()
+    //   // console.log('Values returned from')
+    //   return {...values, category}
+    // })
+    // console.log('All values collected: ', allValues)
+    console.log('Items marked for saving:', itemsMarkedForSaving)
+    const allValues = itemsMarkedForSaving.map( item => {
+      // const {id} = item
+      const values = collectedValues.current[item.id]?.getFormData()
+      console.log('Values returned:', values)
+      // return {...values, category}
+    })
     
   }
 
@@ -155,12 +189,18 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
         data={itemsMarkedForSaving}
         renderItem={({item}) => {
           return(
-            <SaveModalInput item={item} editItemForSaving={editItemForSaving} />
+            <SaveModalInput 
+            item={item} 
+            editItemForSaving={editItemForSaving} 
+            ref={(el) => {
+              collectedValues.current[item.id] = el
+            }}
+          />
           )
         }}
       />
       <View className='border-4 border-green-500'>
-        <Pressable onPress={handleSave}>
+        <Pressable onPress={handleLog}>
           <Text>
             Log
           </Text>

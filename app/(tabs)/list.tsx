@@ -63,7 +63,7 @@ export default function list() {
 
   const handleSave = async() => {
     setSaveModalVisible({status: true})
-    // console.log('Items marked for saving:', itemsMarkedForSaving)
+    console.log('Items marked for saving:', itemsMarkedForSaving)
 
   }
 
