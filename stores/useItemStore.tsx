@@ -15,6 +15,7 @@ interface ItemState{
   setStoredItems: (data: ParsedItemData[]) => void;
   updateStoredItems: (item: ParsedItemData) => void;
   addItems: (item: ParsedItemData) => void;
+  // addListItems: (itemArr: {name:string, amount: string, category:string, details:{ [key:string]:string }}[]) => void;
   deleteStoredItems: (idsToDeleteArray: number[]) => void;
   addCategory:  (category:string) => void;
   updatedCategory: (updatedCategory:  {oldCategory: string, update:string}) => void;
@@ -37,6 +38,7 @@ const useItemStore = create<ItemState>()((set) => ({
     }
   )), 
   addItems:(item) => set((state) => ({allStoredItems:[...state.allStoredItems, item]})),
+  // addListItems: (itemArr) => set((state) => ({allStoredItems:[...state.allStoredItems,...itemArr]})),
   addCategory : (category) => set((state)=>({savedCategories:[...state.savedCategories, category]})),
   addToShoppingList: (neededItem) => set((state)=> ({shoppingList:[...state.shoppingList, neededItem]})),
   deleteStoredItems:(itemIdsToDeleteArray)=>set((state) => ({

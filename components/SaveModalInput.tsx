@@ -8,7 +8,7 @@ interface FormData {
   // data: ParsedNeededItemData
   id: string;
   name: string;
-  quantity: string;
+  amount: string;
   details: {[key:string]:string}
 }
 
@@ -16,14 +16,14 @@ interface Props{
   item: ParsedNeededItemData;
   editItemForSaving: (data: {id: string;
     name: string;
-    quantity: string;
+    amount: string;
     details: {[key:string]:string}
   }) => void;
   // setItemsPreparedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
 }
 
 export interface CollectFormInput{
-  getFormData: () => {id:string,name:string,quantity:string, details:{[key:string]:string}};
+  getFormData: () => {id:string,name:string,amount:string, details:{[key:string]:string}};
 }
 
 const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSaving}, ref) => {
@@ -46,7 +46,7 @@ const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSa
     if(item){
       console.log('Item detected.')
       // console.log('Item passed in:', editModalVisible.item)
-      const { name, quantity, details } = item
+      const { name, amount, details } = item
       if(details){
         const detailNames = Object.keys(details)      
         console.log(`Details in item ${item.name}: `, detailNames)
@@ -116,7 +116,7 @@ const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSa
   useImperativeHandle(ref, () => ({
       getFormData: () => {
         const capture = watch()
-        console.log(`Captured values from item ${item.name}:`, capture)
+        // console.log(`Captured values from item ${item.name}:`, capture)
         return {...capture}
       }
   }))
@@ -138,7 +138,7 @@ const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSa
       />
       <Text>Quantity</Text>
       <Controller
-        name='quantity'
+        name='amount'
         control={control}
         render={({field:{name, onChange, onBlur, value}}) => {
           return(

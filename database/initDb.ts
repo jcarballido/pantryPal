@@ -48,6 +48,16 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
       `)
     })
     return
+  },
+  3: async(db) => {
+    await db.withExclusiveTransactionAsync( async(txn) => {
+      await txn.execAsync(`
+        PRAGMA journal_mode = WAL;
+        ALTER TABLE shopping_list_item
+        RENAME COLUMN quantity TO amount;   
+        PRAGMA user_version = ${CURRENT_VERSION};
+      `)
+    })
   }
 }
 
@@ -72,11 +82,11 @@ const parseStoredItems = (arr: RawItemData[]): { name: string, category: string,
 
   return parsedItems
 }
-const parseStoredShoppingListItems = (arr: RawShoppingListItemData[]): { name: string, quantity: string, details: string }[] => {
+const parseStoredShoppingListItems = (arr: RawShoppingListItemData[]): { name: string, amount: string, details: string }[] => {
   const parsedShoppingListItems = arr.map( rawItem => {
     // const parsed = JSON.parse(rawItem.value)
-    const { name, quantity, details } = rawItem
-    return { name, quantity, details: JSON.parse(details) }
+    const { name, amount, details } = rawItem
+    return { name, amount, details: JSON.parse(details) }
   }) 
 
   return parsedShoppingListItems

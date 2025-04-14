@@ -34,9 +34,9 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
     return
   }
 
-  useEffect(()=>{
-    console.log('Stored Categories:',storedCategories)
-  })
+  // useEffect(()=>{
+  //   console.log('Stored Categories:',storedCategories)
+  // })
 
   return (
     <View className='flex-row flex-1 '>
@@ -52,7 +52,7 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
         <View className={`${expand ? '-mt-2 w-full scale-y-100 absolute top-full bg-white':'scale-y-0 hidden'} border-2 border-red-600`} >
           {
             storedCategories && storedCategories.map( category => {
-              console.log('Category registered as string:', category)
+              // console.log('Category registered as string:', category)
               if(typeof category === 'string'){
                 return(
                   <Text key={category} className='m-2' onPress={()=>setVal(category)}>
@@ -61,7 +61,7 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
                 )  
               }
               if(category.id){
-                console.log('Category registered as object:', category)
+                // console.log('Category registered as object:', category)
                 return(
                   <Text key={category.id} className='m-2' onPress={()=>setVal(category.category)}>
                     {category.category}

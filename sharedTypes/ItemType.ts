@@ -10,7 +10,7 @@ export interface ItemData {
 
 interface NeededItemData{
   name: string;
-  quantity: string;
+  amount: string;
   [key:string]: string;
 }
 
@@ -26,7 +26,7 @@ export interface ParsedItemData {
 export interface ParsedNeededItemData {
   id: string;
   name: string;
-  quantity: string;
+  amount: string;
   details: {[key:string]:string}
 }
 
@@ -42,13 +42,13 @@ export interface RawItemData{
 export interface RawShoppingListItemData {
   id: string;
   name: string;
-  quantity: string;
+  amount: string;
   details: string;
 }
 
 export interface NeededItem{
   id: string
   name: string;
-  quantity: string;
+  amount: string;
   [key:string]: string
 }

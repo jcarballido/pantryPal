@@ -34,3 +34,9 @@ export const V2_SCHEMA = `
   ALTER TABLE shopping_list_item
   ADD COLUMN detail TEXT; 
 `
+
+export const V3_SCHEMA = `
+  PRAGMA journal_mode = WAL;
+  ALTER TABLE shopping_list_item
+  RENAME COLUMN quantity TO amount; 
+`
