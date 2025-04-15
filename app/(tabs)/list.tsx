@@ -32,7 +32,7 @@ export default function list() {
       const allShoppingListItems: RawShoppingListItemData[] = await db.getAllAsync('SELECT * FROM shopping_list_item')
       const parsedItems: ParsedNeededItemData[] = allShoppingListItems.map((item) => {
         // console.log('type of item id:', typeof(item.id))
-        return {id:(item['id']),name:item.name,quantity:item.quantity,details:JSON.parse(item.details)}
+        return {id:(item['id']),name:item.name,amount:item.amount,details:JSON.parse(item.details)}
       })
       setShoppingList(parsedItems)
     }

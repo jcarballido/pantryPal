@@ -28,7 +28,7 @@ export interface CollectFormInput{
 
 const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSaving}, ref) => {
 
-  const requiredInputNames:('name'|'quantity')[] = ['name', 'quantity']
+  const requiredInputNames:('name'|'amount')[] = ['name', 'amount']
 
   const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<FormData>()
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)

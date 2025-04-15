@@ -122,15 +122,18 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       // })
       // console.log('All values collected: ', allValues)
       console.log('Items marked for saving:', itemsMarkedForSaving)
-      const allValues = itemsMarkedForSaving.map( item => {
-        // const {id} = item
+      const allValues = itemsMarkedForSaving.flatMap( item => {
         const values = collectedValues.current[item.id]?.getFormData()
-        return {...values, category:category_}
-        // return values
+        return values ? {...values, category:category_} : []
       })
       console.log('All values captured: ', allValues)    
       addShoppingListItems(db,allValues)
-  }
+    }
+
+    const handleLog = async() => {
+      const allItems = await db.getAllAsync('SELECT * FROM item')
+      console.log('All items saved: ', allItems)
+    }
 
   // const insertNewItem = async(formattedData:DataFormatted) => {
   //   await db.withExclusiveTransactionAsync( async(txn) => {
@@ -210,6 +213,13 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       />
       <View className='border-4 border-green-500'>
         <Pressable onPress={handleSave}>
+          <Text>
+            Log
+          </Text>
+        </Pressable>
+      </View>
+      <View className='border-4 border-green-500 mt-10'>
+        <Pressable onPress={handleLog}>
           <Text>
             Log
           </Text>
