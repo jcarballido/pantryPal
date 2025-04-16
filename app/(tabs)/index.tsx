@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import CategoryItems from '@/components/CategoryItems'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import CategorySearch from '@/components/CategorySearch'
-import { ItemData, RawItemData, ParsedItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordStoredItem, DbRecordStoredItem } from '@/sharedTypes/ItemType'
 import AddItemModal from '@/components/AddItemModal'
 import { useSQLiteContext } from 'expo-sqlite'
 import EditItemModal from '@/components/EditItemModal'
@@ -22,14 +22,14 @@ export default function index() {
   const [ selectedCategory, setSelectedCategory ] = useState< string|null >(null)
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
-  const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedItemData[]>([])
-  const [ filteredCategorySpecificItems, setFilteredCategorySpecificItems ] = useState<ParsedItemData[]>([])
+  const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
+  const [ filteredCategorySpecificItems, setFilteredCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
 
   useEffect(() => {
     const fetchData = async() => {
-      const allItems:RawItemData[] = await db.getAllAsync('SELECT * FROM item')
+      const allItems:DbRecordStoredItem[] = await db.getAllAsync('SELECT * FROM item')
       // console.log('All items stored:', allItems)
-      const parsedItems: ParsedItemData[] = allItems.map((item) => {
+      const parsedItems: ParsedRecordStoredItem[] = allItems.map((item) => {
         return {id:(item['id']),uid:item.uid,name:item.name, category:item.category, amount:item.amount,details:JSON.parse(item.details)}
       })
       setStoredItems(parsedItems)

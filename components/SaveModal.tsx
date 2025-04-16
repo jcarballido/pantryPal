@@ -3,16 +3,16 @@ import React, { SetStateAction, useEffect, useRef, useState } from 'react'
 import useItemStore from '@/stores/useItemStore';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Controller, useForm } from 'react-hook-form';
-import { ParsedNeededItemData } from '@/sharedTypes/ItemType';
+import { ParsedRecordShoppingListItem } from '@/sharedTypes/ItemType';
 import SaveModalInput, {CollectFormInput} from './SaveModalInput';
 import DropdownInput from './DropdownInput';
 import RequiredInput from './RequiredInput';
-import { addShoppingListItems } from '@/database/addItemStoredItems';
+import { addShoppingListItems } from '@/database/addItems';
 
 interface Props{
   saveModalVisible: {status: boolean};
   setSaveModalVisible: React.Dispatch<SetStateAction<{status: boolean}>>;
-  itemsMarkedForSaving: ParsedNeededItemData[]
+  itemsMarkedForSaving: ParsedRecordShoppingListItem[]
 }
 
 interface ParentFormData {
@@ -32,11 +32,11 @@ interface ParentFormData {
 
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
   
-  const { savedCategories, setSavedCategories, allStoredItems } = useItemStore()
+  const { savedCategories, setSavedCategories, allStoredItems, addListItems } = useItemStore()
   const db = useSQLiteContext()
   const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<ParentFormData>()
   const inputValues = watch()
-  const itemsPreparedForSaving = useRef<ParsedNeededItemData[]>([])
+  const itemsPreparedForSaving = useRef<ParsedRecordShoppingListItem[]>([])
   // const [itemsPreparedForSaving, setItemsPreparedForSaving] = useState<ParsedNeededItemData[]>([]) 
   
   const editItemForSaving = (data:{id: string;
@@ -122,12 +122,11 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       // })
       // console.log('All values collected: ', allValues)
       console.log('Items marked for saving:', itemsMarkedForSaving)
-      const allValues = itemsMarkedForSaving.flatMap( item => {
-        const values = collectedValues.current[item.id]?.getFormData()
+      const allValues = itemsMarkedForSaving.flatMap( shoppingListItem => {
+        const values = collectedValues.current[shoppingListItem.id]?.getFormData()
         return values ? {...values, category:category_} : []
       })
-      console.log('All values captured: ', allValues)    
-      addShoppingListItems(db,allValues)
+      addShoppingListItems(db,allValues, addListItems)
     }
 
     const handleLog = async() => {

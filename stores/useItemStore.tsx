@@ -1,21 +1,21 @@
-import { NeededItem, ParsedItemData, ParsedNeededItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordStoredItem, ParsedRecordShoppingListItem } from '@/sharedTypes/ItemType'
 import { create } from 'zustand'
 
-type ID = ParsedItemData['id']
+type ID = ParsedRecordStoredItem['id']
 
 interface ItemState{
-  allStoredItems: ParsedItemData[];
-  shoppingList: ParsedNeededItemData[];
+  allStoredItems: ParsedRecordStoredItem[];
+  shoppingList: ParsedRecordShoppingListItem[];
   savedCategories: string[];
   setSavedCategories: (data: string[]) => void;
-  setShoppingList: (data: ParsedNeededItemData[]) => void;
-  updateShoppingList: (updatedItem: ParsedNeededItemData)=> void;
-  addToShoppingList: (neededItem: ParsedNeededItemData)=> void;
+  setShoppingList: (data: ParsedRecordShoppingListItem[]) => void;
+  updateShoppingList: (updatedItem: ParsedRecordShoppingListItem)=> void;
+  addToShoppingList: (neededItem: ParsedRecordShoppingListItem)=> void;
   deleteFromShoppingList: (idsToDeleteArray: number[])=> void;
-  setStoredItems: (data: ParsedItemData[]) => void;
-  updateStoredItems: (item: ParsedItemData) => void;
-  addItems: (item: ParsedItemData) => void;
-  // addListItems: (itemArr: {name:string, amount: string, category:string, details:{ [key:string]:string }}[]) => void;
+  setStoredItems: (data: ParsedRecordStoredItem[]) => void;
+  updateStoredItems: (item: ParsedRecordStoredItem) => void;
+  addStoredItems: (item: ParsedRecordStoredItem) => void;
+  addListItems: (itemArr: ParsedRecordStoredItem[]) => void;
   deleteStoredItems: (idsToDeleteArray: number[]) => void;
   addCategory:  (category:string) => void;
   updatedCategory: (updatedCategory:  {oldCategory: string, update:string}) => void;
@@ -37,8 +37,8 @@ const useItemStore = create<ItemState>()((set) => ({
       shoppingList:state.shoppingList.map( individualItem => JSON.stringify(individualItem.id) === (neededItem.id) ? neededItem:individualItem) 
     }
   )), 
-  addItems:(item) => set((state) => ({allStoredItems:[...state.allStoredItems, item]})),
-  // addListItems: (itemArr) => set((state) => ({allStoredItems:[...state.allStoredItems,...itemArr]})),
+  addStoredItems:(item) => set((state) => ({allStoredItems:[...state.allStoredItems, item]})),
+  addListItems: (itemArr) => set((state) => ({allStoredItems:[...state.allStoredItems,...itemArr]})),
   addCategory : (category) => set((state)=>({savedCategories:[...state.savedCategories, category]})),
   addToShoppingList: (neededItem) => set((state)=> ({shoppingList:[...state.shoppingList, neededItem]})),
   deleteStoredItems:(itemIdsToDeleteArray)=>set((state) => ({

@@ -1,6 +1,6 @@
 import { View, Text, Pressable, LayoutChangeEvent } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { ParsedItemData } from '@/sharedTypes/ItemType';
+import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType';
 
 interface Props{
   styles: string;

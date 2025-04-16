@@ -5,7 +5,7 @@ import RequiredInput from './RequiredInput';
 import AddAdditionalInput from '@/components/AddAdditionalInput'
 import AdditionalInput from './AdditionalInput';
 import { useSQLiteContext } from 'expo-sqlite';
-import { ParsedItemData, ParsedNeededItemData, RawItemData, RawShoppingListItemData } from '@/sharedTypes/ItemType';
+import {  ParsedRecordShoppingListItem, DbRecordShoppingListItem } from '@/sharedTypes/ItemType';
 import useItemStore from '@/stores/useItemStore';
 
 interface Props{
@@ -14,20 +14,20 @@ interface Props{
 }
 interface FormData{
   name: string;
-  quantity: string;
+  amount: string;
   details : {[key:string]:string};
 }
 
 interface DataFormatted {
   name: string;
-  quantity: string;
+  amount: string;
   details:{[key: string]: string} 
 }
 
 
 export default function  AddShoppingListItemModal({visible, setVisible}: Props) {
  
-  const requiredInputNames:('name'|'quantity')[] = ['name','quantity']
+  const requiredInputNames:('name'|'amount')[] = ['name','amount']
   
   const { control, handleSubmit, reset, watch } = useForm<FormData>()
   const inputValues = watch()
@@ -61,11 +61,11 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
   const insertNewItem = async(formattedData:DataFormatted) => {
     await db.withExclusiveTransactionAsync( async(txn) => {
       // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
-      const returnData = await txn.runAsync('INSERT INTO shopping_list_item(name, quantity,details) VALUES(?,?,?) RETURNING *',formattedData.name,formattedData.quantity,JSON.stringify(formattedData.details))
+      const returnData = await txn.runAsync('INSERT INTO shopping_list_item(name, amount,details) VALUES(?,?,?) RETURNING *',formattedData.name,formattedData.amount,JSON.stringify(formattedData.details))
       const lastInsertId = returnData.lastInsertRowId
-      const getLastInsertedRowIdData: RawShoppingListItemData[] = await txn.getAllAsync('SELECT * FROM shopping_list_item WHERE id = ?;',[lastInsertId])
-      const { id, name, quantity, details } = getLastInsertedRowIdData[0]
-      const parsedData: ParsedNeededItemData = {id,name,quantity, details:JSON.parse(details)}
+      const getLastInsertedRowIdData: DbRecordShoppingListItem[] = await txn.getAllAsync('SELECT * FROM shopping_list_item WHERE id = ?;',[lastInsertId])
+      const { id, name, amount, details } = getLastInsertedRowIdData[0]
+      const parsedData: ParsedRecordShoppingListItem = {id,name,amount, details:JSON.parse(details)}
       // console.log('Parsed Data:', parsedData)
       await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
       addToShoppingList(parsedData)
@@ -78,8 +78,8 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
 
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
-    const { name, quantity, details } = data
-    const dataFormatted:DataFormatted = {name, quantity, details}
+    const { name, amount, details } = data
+    const dataFormatted:DataFormatted = {name, amount, details}
     // console.log('Formatted Data:', dataFormatted)
     try{
       await insertNewItem(dataFormatted)
@@ -98,7 +98,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
           render={({field: { onChange, onBlur,value }}) => (<RequiredInput label='Name' placeholderText='Name' onChange={onChange} onBlur={onBlur} value={value}  />) }
         />
         <Controller 
-          name='quantity'
+          name='amount'
           control={control}
           render={({field: { onChange, onBlur,value }}) => (<RequiredInput label='Quantity' placeholderText='Quantity' onChange={onChange} onBlur={onBlur} value={value}  />) }
         />

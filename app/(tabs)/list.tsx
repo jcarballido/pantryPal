@@ -4,7 +4,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import CategorySearch from '@/components/CategorySearch'
 import useItemStore from '@/stores/useItemStore'
 import { useSQLiteContext } from 'expo-sqlite'
-import { NeededItem, ParsedNeededItemData, RawShoppingListItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordShoppingListItem, DbRecordShoppingListItem } from '@/sharedTypes/ItemType'
 import ShoppingListItem from '@/components/ShoppingListItem'
 import AddShoppingListItemModal from '@/components/AddShoppingListItemModal'
 import SaveModal from '@/components/SaveModal'
@@ -19,7 +19,7 @@ export default function list() {
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean}>({status:false})
   const [ saveMode, setSaveMode ] = useState<{status:boolean}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
-  const [ itemsMarkedForSaving, setItemsMarkedForSaving  ] = useState<ParsedNeededItemData[]>([])
+  const [ itemsMarkedForSaving, setItemsMarkedForSaving  ] = useState<ParsedRecordShoppingListItem[]>([])
   const [ clearChecks,setClearChecks ] = useState(false)
   
   const enableDelete = () => {
@@ -29,8 +29,8 @@ export default function list() {
 
   useEffect(() => {
     const fetchData = async() => {
-      const allShoppingListItems: RawShoppingListItemData[] = await db.getAllAsync('SELECT * FROM shopping_list_item')
-      const parsedItems: ParsedNeededItemData[] = allShoppingListItems.map((item) => {
+      const allShoppingListItems: DbRecordShoppingListItem[] = await db.getAllAsync('SELECT * FROM shopping_list_item')
+      const parsedItems: ParsedRecordShoppingListItem[] = allShoppingListItems.map((item) => {
         // console.log('type of item id:', typeof(item.id))
         return {id:(item['id']),name:item.name,amount:item.amount,details:JSON.parse(item.details)}
       })

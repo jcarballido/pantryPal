@@ -7,11 +7,12 @@ import { useForm, Controller, SubmitHandler } from 'react-hook-form'
 import { Picker } from '@react-native-picker/picker'
 import DropdownInput from './DropdownInput'
 import { useSQLiteContext } from 'expo-sqlite'
-import { ParsedItemData, RawItemData } from '@/sharedTypes/ItemType'
+// import { ParsedRecordStoredItem, DbRecordStoredItem } from '@/sharedTypes/ItemType'
 import 'react-native-get-random-values'
 import { nanoid } from 'nanoid'
 import useItemStore from '@/stores/useItemStore'
-import { addItemStoredItems } from '@/database/addItemStoredItems'
+import { addItems } from '@/database/addItems'
+import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType'
 
 type Props = {
   visible:{
@@ -39,7 +40,7 @@ interface DataFormatted {
 
 export default function AddItemModal({ visible, setVisible, storedCategories }:Props) {
 
-  const { addItems } = useItemStore()
+  const { addStoredItems } = useItemStore()
 
   const requiredInputNames = [ 'name','category','amount' ]
 
@@ -97,9 +98,17 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
 
-    const {name,amount,category, newCategory,...rest} = data
+    const {name,amount,category, newCategory,...details} = data
     try{
-      await addItemStoredItems(db, name, amount,newCategory, category, rest ,addItems)
+      let mergedCategory 
+      if(newCategory){
+        console.log('New Category entered:', newCategory)
+        mergedCategory = newCategory
+      }else{
+        mergedCategory = category
+      }
+      const newItem: Omit<ParsedRecordStoredItem,'id'|'uid'> = { name, amount, category: mergedCategory, details}
+      await addItems(db, newItem ,addStoredItems)
     }catch(e){
       console.log('Error adding new item: ', e)
     }

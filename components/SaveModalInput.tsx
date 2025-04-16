@@ -1,7 +1,7 @@
 import { View, Text, TextInput } from 'react-native'
 import React, { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { ParsedNeededItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordShoppingListItem } from '@/sharedTypes/ItemType'
 import AdditionalInput from './AdditionalInput'
 
 interface FormData {
@@ -13,7 +13,7 @@ interface FormData {
 }
 
 interface Props{
-  item: ParsedNeededItemData;
+  item: ParsedRecordShoppingListItem;
   editItemForSaving: (data: {id: string;
     name: string;
     amount: string;
