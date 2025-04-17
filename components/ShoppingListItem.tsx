@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from 'react-native'
 import React, { SetStateAction, useEffect, useState } from 'react'
-import { ParsedNeededItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordShoppingListItem } from '@/sharedTypes/ItemType'
 
 // interface Props {
 //   item: ParsedNeededItemData
@@ -26,14 +26,14 @@ import { ParsedNeededItemData } from '@/sharedTypes/ItemType'
 // import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 interface CategoryItemProps {
-  item: ParsedNeededItemData;
+  item: ParsedRecordShoppingListItem;
   // setEditModalVisible: React.Dispatch<SetStateAction<{ status:boolean; item?:ParsedNeededItemData }>>;
   deleteMode: { status:boolean, category?: string };
   saveMode: { status:boolean };
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>;
-  setItemsMarkedForSaving: React.Dispatch<SetStateAction<ParsedNeededItemData[]>>;
+  setItemsMarkedForSaving: React.Dispatch<SetStateAction<ParsedRecordShoppingListItem[]>>;
   itemsMarkedForDeletion: number[];  
-  itemsMarkedForSaving: ParsedNeededItemData[];
+  itemsMarkedForSaving: ParsedRecordShoppingListItem[];
   clearChecks: boolean;
 }
 
@@ -43,7 +43,7 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
   const [ isFlagged, setIsFlagged ] = useState(false)
   const [ isCheckedForDeletion, setIsCheckedForDeletion ] = useState(false)
   const [ isCheckedForSaving, setIsCheckedForSaving ] = useState(false)
-  const { id, name,quantity } = item
+  const { id, name,amount } = item
   // const itemId = item.id
   
   // const descriptors:(string|number)[][] = []

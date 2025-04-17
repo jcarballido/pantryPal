@@ -12,6 +12,7 @@ import { addShoppingListItems } from '@/database/addItems';
 interface Props{
   saveModalVisible: {status: boolean};
   setSaveModalVisible: React.Dispatch<SetStateAction<{status: boolean}>>;
+  setSaveMode: React.Dispatch<SetStateAction<{status:boolean}>>;
   itemsMarkedForSaving: ParsedRecordShoppingListItem[]
 }
 
@@ -30,9 +31,9 @@ interface ParentFormData {
 
 
 
-const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}: Props) => {
+const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving, setSaveMode}: Props) => {
   
-  const { savedCategories, setSavedCategories, allStoredItems, addListItems } = useItemStore()
+  const { savedCategories, setSavedCategories, allStoredItems, addListItems,deleteFromShoppingList } = useItemStore()
   const db = useSQLiteContext()
   const { control, handleSubmit, reset,watch, formState:{ errors, touchedFields } } = useForm<ParentFormData>()
   const inputValues = watch()
@@ -106,13 +107,13 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       // console.log('All values collected: ', allValues)
     // }
     
-    const handleSave = () => {
+    const handleSave = async() => {
       // console.log('Category:', inputValues['category'])
       // if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
       // console.log('Items to store: ', itemsPreparedForSaving.current)
-      const category = watch('category')
-      const category_ = category === 'New Category' ?  inputValues['newCategory'] : inputValues['category']  
-      console.log('Category value being watched: ', category_)
+      const categoryInputValue = watch('category')
+      const category = categoryInputValue === 'New Category' ?  inputValues['newCategory'] : inputValues['category']  
+      console.log('Category value being watched: ', category)
       // console.log('New Category if listed: ', ca)
       // const allValues = itemsPreparedForSaving.current.map( item => {
       //   // const {id} = item
@@ -124,9 +125,27 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving}
       console.log('Items marked for saving:', itemsMarkedForSaving)
       const allValues = itemsMarkedForSaving.flatMap( shoppingListItem => {
         const values = collectedValues.current[shoppingListItem.id]?.getFormData()
-        return values ? {...values, category:category_} : []
+        return values ? {...values, category:category} : []
       })
       addShoppingListItems(db,allValues, addListItems)
+      try {
+        const placeHolders = itemsMarkedForSaving.map(_=> '?').join()
+        const savedItemIds = itemsMarkedForSaving.map( savedItem => parseInt(savedItem.id) )
+        await db.runAsync(`DELETE FROM shopping_list_item WHERE id IN (${placeHolders})`,savedItemIds)
+        deleteFromShoppingList(savedItemIds)
+        // setSavedItems( prev => {
+        //   const filteredPrevState = prev.filter((item:ParsedItemData) => !itemsMarkedForDeletion.includes(parseInt(item.id)))
+        //   return filteredPrevState
+        // })
+        setSaveModalVisible({status:false})
+        setSaveMode({status:false})
+        // console.log('Selected Category:', selectedCategory)
+        // console.log('Number of items in category:', numItemsByCateogry)
+        // console.log('Stored Categories:', storedCategories)
+      } catch (e) {
+        console.log('Error processing delelte:', e)
+      }
+  
     }
 
     const handleLog = async() => {

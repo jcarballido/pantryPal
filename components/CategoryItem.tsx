@@ -1,11 +1,11 @@
 import { View, Text, Pressable } from 'react-native'
 import React, { SetStateAction, useEffect, useState } from 'react'
-import { ParsedItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 interface CategoryItemProps {
-  item: ParsedItemData;
-  setEditModalVisible: React.Dispatch<SetStateAction<{ status:boolean; item?:ParsedItemData }>>;
+  item: ParsedRecordStoredItem;
+  setEditModalVisible: React.Dispatch<SetStateAction<{ status:boolean; item?:ParsedRecordStoredItem }>>;
   deleteMode: { status:boolean, category?: string };
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>;
   itemsMarkedForDeletion: number[]  
@@ -32,7 +32,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
     setIsFlagged(!isFlagged )
   }
 
-  const handleEdit = (item:ParsedItemData) => {
+  const handleEdit = (item: ParsedRecordStoredItem) => {
     // console.log('Item passed in:', item)
     setEditModalVisible({status: true, item:item})
   }
@@ -80,7 +80,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
               </Pressable>
             </View>
             {
-              Object.keys(details).length > 0
+              details && Object.keys(details).length > 0
               ? <Pressable className={`flex items-center justify-center min-w-[44] h-[44] border-2 border-light-cool-gray rounded-lg ${show.status? 'bg-light-cool-gray':'bg-transparent'}`} onPress={()=>setShow(previousShow => {return {status:!previousShow.status}})} > 
                   <Text className='text-base'>Details</Text>
                 </Pressable>

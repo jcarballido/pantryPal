@@ -90,7 +90,7 @@ export default function list() {
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <AddShoppingListItemModal visible={visible} setVisible={setVisible} />
-      <SaveModal saveModalVisible={saveModalVisible} setSaveModalVisible={setSaveModalVisible} itemsMarkedForSaving={itemsMarkedForSaving} />
+      <SaveModal saveModalVisible={saveModalVisible} setSaveModalVisible={setSaveModalVisible} itemsMarkedForSaving={itemsMarkedForSaving} setSaveMode={setSaveMode} />
       <View className='flex items-center justify-center mr-4'>
         {
           deleteMode.status
