@@ -21,7 +21,7 @@ export const addItems = async(db:SQLiteDatabase, newItem:Omit<ParsedRecordStored
   }
 }
 
-export const addShoppingListItems = async(db:SQLiteDatabase, shoppingListItemsToAdd:Omit<ParsedRecordStoredItem,'uid'>[],addListItems:(items: ParsedRecordStoredItem[])=>void) => {
+export const addShoppingListItems = async(db:SQLiteDatabase, shoppingListItemsToAdd:Omit<ParsedRecordStoredItem,'uid'>[],addListItems:(items: ParsedRecordStoredItem[])=>void, itemsMarkedForSaving: ParsedRecordShoppingListItem[], deleteFromShoppingList: (itemsArray:number[]) => void ) => {
   try{
     await db.withExclusiveTransactionAsync( async(txn) => {
       const storedData = await Promise.all(
@@ -37,7 +37,13 @@ export const addShoppingListItems = async(db:SQLiteDatabase, shoppingListItemsTo
         return parsedData
       }))
       addListItems(storedData)
+      const placeHolders = itemsMarkedForSaving.map(_=> '?').join()
+      const savedItemIds = itemsMarkedForSaving.map( savedItem => parseInt(savedItem.id) )
+      await txn.runAsync(`DELETE FROM shopping_list_item WHERE id IN (${placeHolders})`,savedItemIds)
+      deleteFromShoppingList(savedItemIds)
+      itemsMarkedForSaving
   })}catch(e){
-    console.log('Error inserting item: ', e)
+    console.log('Error in addShoppingListItem: ',e)
+    throw e
   }
 } 

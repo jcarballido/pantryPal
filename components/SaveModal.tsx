@@ -13,7 +13,9 @@ interface Props{
   saveModalVisible: {status: boolean};
   setSaveModalVisible: React.Dispatch<SetStateAction<{status: boolean}>>;
   setSaveMode: React.Dispatch<SetStateAction<{status:boolean}>>;
-  itemsMarkedForSaving: ParsedRecordShoppingListItem[]
+  itemsMarkedForSaving: ParsedRecordShoppingListItem[];
+  setItemsMarkedForSaving: React.Dispatch<SetStateAction<ParsedRecordShoppingListItem[]>>;
+  setClearChecks: React.Dispatch<SetStateAction<boolean>>
 }
 
 interface ParentFormData {
@@ -31,7 +33,7 @@ interface ParentFormData {
 
 
 
-const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving, setSaveMode}: Props) => {
+const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving, setSaveMode, setItemsMarkedForSaving, setClearChecks}: Props) => {
   
   const { savedCategories, setSavedCategories, allStoredItems, addListItems,deleteFromShoppingList } = useItemStore()
   const db = useSQLiteContext()
@@ -86,6 +88,7 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
       })
       const uniqueCategories = [...new Set(categories)]
       setSavedCategories(uniqueCategories)
+      console.log("Items marked for saving in SaveModal mount:", itemsMarkedForSaving)
     },[])
     
     const consoleLogItemsToSave = () => {
@@ -127,25 +130,15 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
         const values = collectedValues.current[shoppingListItem.id]?.getFormData()
         return values ? {...values, category:category} : []
       })
-      addShoppingListItems(db,allValues, addListItems)
       try {
-        const placeHolders = itemsMarkedForSaving.map(_=> '?').join()
-        const savedItemIds = itemsMarkedForSaving.map( savedItem => parseInt(savedItem.id) )
-        await db.runAsync(`DELETE FROM shopping_list_item WHERE id IN (${placeHolders})`,savedItemIds)
-        deleteFromShoppingList(savedItemIds)
-        // setSavedItems( prev => {
-        //   const filteredPrevState = prev.filter((item:ParsedItemData) => !itemsMarkedForDeletion.includes(parseInt(item.id)))
-        //   return filteredPrevState
-        // })
-        setSaveModalVisible({status:false})
-        setSaveMode({status:false})
-        // console.log('Selected Category:', selectedCategory)
-        // console.log('Number of items in category:', numItemsByCateogry)
-        // console.log('Stored Categories:', storedCategories)
-      } catch (e) {
-        console.log('Error processing delelte:', e)
+        addShoppingListItems(db,allValues, addListItems, itemsMarkedForSaving,deleteFromShoppingList)
+      } catch (error) {
+        console.log('Error attempting to save items:', error)
+        return
       }
-  
+      setItemsMarkedForSaving([])
+      setSaveModalVisible({status:false})
+      setSaveMode({status:false})          
     }
 
     const handleLog = async() => {
@@ -191,6 +184,9 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
     <Modal visible={saveModalVisible.status} onRequestClose={
       ()=>{
         setSaveModalVisible({status: false})
+        setItemsMarkedForSaving([])
+        setSaveMode({status:false})
+        setClearChecks(true)
       }
     }>
       <Controller

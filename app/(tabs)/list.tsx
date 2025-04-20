@@ -34,6 +34,7 @@ export default function list() {
         // console.log('type of item id:', typeof(item.id))
         return {id:(item['id']),name:item.name,amount:item.amount,details:JSON.parse(item.details)}
       })
+      console.log('Parsed items retrieved from DB:', parsedItems)
       setShoppingList(parsedItems)
     }
     fetchData()
@@ -90,7 +91,7 @@ export default function list() {
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <AddShoppingListItemModal visible={visible} setVisible={setVisible} />
-      <SaveModal saveModalVisible={saveModalVisible} setSaveModalVisible={setSaveModalVisible} itemsMarkedForSaving={itemsMarkedForSaving} setSaveMode={setSaveMode} />
+      <SaveModal saveModalVisible={saveModalVisible} setSaveModalVisible={setSaveModalVisible} itemsMarkedForSaving={itemsMarkedForSaving} setSaveMode={setSaveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} setClearChecks={setClearChecks} />
       <View className='flex items-center justify-center mr-4'>
         {
           deleteMode.status
@@ -116,9 +117,9 @@ export default function list() {
         }
       </View>
       <Text className='self-center m-10'> Shopping List </Text>
-      <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
+      {!deleteMode.status && !saveMode.status && <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
         <Text className='text-zinc-200'>Add Item</Text>
-      </Pressable>
+      </Pressable>}
       <View style={{marginBottom:bottomTabBarHeight+30}} className='flex-1 flex-col border-2 border-primary-action-base rounded-xl bg-white w-11/12 self-center'>
         <FlatList
           data={shoppingList}

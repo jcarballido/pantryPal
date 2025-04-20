@@ -92,6 +92,7 @@ export default function ShoppingListItem({item, deleteMode, setItemsMarkedForDel
 
   useEffect(()=>{
     if(isCheckedForSaving){
+      console.log('Item checked:', item)
       setItemsMarkedForSaving(prev => [...prev, item])
     }else{
       const updatedArray = itemsMarkedForSaving.filter( itemMarked => itemMarked.id !== item.id)

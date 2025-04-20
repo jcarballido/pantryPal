@@ -106,6 +106,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
           additionalDetails.map( detail => {
             return(
               <Controller
+              key={`${detail}`}
               name={`details.${detail}`}
               control={control}
               render={( { field:{ onChange, onBlur, value }} ) => (

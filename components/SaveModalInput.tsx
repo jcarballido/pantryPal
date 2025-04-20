@@ -47,6 +47,7 @@ const SaveModalInput = forwardRef<CollectFormInput,Props>( ({item, editItemForSa
       console.log('Item detected.')
       // console.log('Item passed in:', editModalVisible.item)
       const { name, amount, details } = item
+      console.log('Item details:',details)
       if(details){
         const detailNames = Object.keys(details)      
         console.log(`Details in item ${item.name}: `, detailNames)
