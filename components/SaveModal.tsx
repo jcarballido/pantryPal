@@ -56,13 +56,13 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
     console.log('Items prepped for saving: ', itemsPreparedForSaving.current)
   }
   
-  
   const collectedValues = useRef<Record<string,CollectFormInput | null>>({})
   
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
   const [ newDetailName, setNewDetailName ] = useState('')
   // const [ itemsPreparedForSaving, setItemsPreparedForSaving ] = useState<ParsedNeededItemData[]>([])
   const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
+  const [ categorySet, setCategorySet ] = useState<boolean>(false)
   
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -90,6 +90,20 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
       setSavedCategories(uniqueCategories)
       console.log("Items marked for saving in SaveModal mount:", itemsMarkedForSaving)
     },[])
+
+    useEffect(() => {
+      const vals = watch((value,{name,type})=>{
+        console.log('Value:',value)
+        const categoryValue = value.category
+        const newCategoryValue = value.newCategory
+        // if categoryValue == undefined, false
+        // if categoryValue == 'New Category' and newCategoryValue == undefined or '', false
+        const categoryEstablished = categoryValue !== undefined || categoryValue !== "" && (categoryValue === 'New Category' && (newCategoryValue !== "" || newCategoryValue !== undefined ))
+        console.log('Category set? ', categoryEstablished)
+      })
+
+      return () => vals.unsubscribe()
+    },[watch])
     
     const consoleLogItemsToSave = () => {
       console.log('Items to be saved:', savedCategories)
@@ -139,11 +153,6 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
       setItemsMarkedForSaving([])
       setSaveModalVisible({status:false})
       setSaveMode({status:false})          
-    }
-
-    const handleLog = async() => {
-      const allItems = await db.getAllAsync('SELECT * FROM item')
-      console.log('All items saved: ', allItems)
     }
 
   // const insertNewItem = async(formattedData:DataFormatted) => {
@@ -225,20 +234,13 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
           )
         }}
       />
-      <View className='border-4 border-green-500'>
+      {categorySet && <View className='border-4 border-green-500'>
         <Pressable onPress={handleSave}>
           <Text>
-            Log
+            Save
           </Text>
         </Pressable>
-      </View>
-      <View className='border-4 border-green-500 mt-10'>
-        <Pressable onPress={handleLog}>
-          <Text>
-            Log
-          </Text>
-        </Pressable>
-      </View>
+      </View>}
     </Modal>
   )
 }
