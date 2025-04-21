@@ -96,10 +96,13 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
         console.log('Value:',value)
         const categoryValue = value.category
         const newCategoryValue = value.newCategory
+        const categoryEstablished = categoryValue !== undefined && (categoryValue !== 'New Category' || (newCategoryValue !== undefined && newCategoryValue !== ""))
+            
         // if categoryValue == undefined, false
         // if categoryValue == 'New Category' and newCategoryValue == undefined or '', false
-        const categoryEstablished = categoryValue !== undefined || categoryValue !== "" && (categoryValue === 'New Category' && (newCategoryValue !== "" || newCategoryValue !== undefined ))
+        // const categoryEstablished = categoryValue !== undefined || categoryValue !== "" && (categoryValue === 'New Category' && (newCategoryValue !== "" || newCategoryValue !== undefined ))
         console.log('Category set? ', categoryEstablished)
+        setCategorySet(categoryEstablished)
       })
 
       return () => vals.unsubscribe()
