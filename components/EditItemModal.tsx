@@ -5,16 +5,14 @@ import DropdownInput from './DropdownInput';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form'
 import AdditionalInput from './AdditionalInput'
 import AddAdditionalInput from './AddAdditionalInput';
-import { ItemData, ParsedItemData } from '@/sharedTypes/ItemType';
+import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType';
 import { useSQLiteContext } from 'expo-sqlite';
 import useItemStore from '@/stores/useItemStore';
 
 interface EditItemModalProps{
-  editModalVisible: { status:boolean; item?: ParsedItemData };
-  setEditModalVisible: React.Dispatch<SetStateAction<{status: boolean, item?: ParsedItemData}>>;
+  editModalVisible: { status:boolean; item?: ParsedRecordStoredItem};
+  setEditModalVisible: React.Dispatch<SetStateAction<{status: boolean, item?: ParsedRecordStoredItem}>>;
   storedCategories: string[];
-  // setSavedItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
-  // parsedItemData: ParsedItemData
 }
 
 interface DetailsInterface{
@@ -98,7 +96,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     })
   }
 
-  const updateData = async(formattedData:ItemData, name:string) => {
+  const updateData = async(formattedData:ParsedRecordStoredItem, name:string) => {
     // console.log('Data to save to db:', formattedData)
     const {name:itemName,amount,category,uid,details,id} = formattedData
     await db.withExclusiveTransactionAsync(async(txn) => {
@@ -125,7 +123,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     const newDetails = additionalDetails.map(detailString => {
       detailObj[detailString] = details[detailString]
     })
-    const dataFormatted:ItemData = {name, amount,category:'', uid , details:detailObj,id}
+    const dataFormatted:ParsedRecordStoredItem = {name, amount,category:'', uid , details:detailObj,id}
     if(newCategory){
       dataFormatted['category'] = newCategory
     }else{
