@@ -10,7 +10,7 @@ export default function AccountStack() {
       }}
     >
       <Stack.Screen name='index' options={{headerShown:false}}/>
-      <Stack.Screen name='changePassword' options={{ headerTitle:'Change Password' }}/>
+      {/* <Stack.Screen name='changePassword' options={{ headerTitle:'Change Password' }}/> */}
       <Stack.Screen name='details' options={{ headerTitle:'Details' }}/>
       <Stack.Screen name='share' options={{ headerTitle:'Share Inventory' }} />
     </Stack>

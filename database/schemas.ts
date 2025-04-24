@@ -40,3 +40,7 @@ export const V3_SCHEMA = `
   ALTER TABLE shopping_list_item
   RENAME COLUMN quantity TO amount; 
 `
+export const V4_SCHEMA = `
+  PRAGMA journal_mode = WAL;
+  CREATE TABLE IF NOT EXISTS categories (id PRIMARY INTEGER KEY NOT NULL, category TEXT NOT NULL)
+`

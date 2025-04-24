@@ -1,9 +1,9 @@
-import { NeededItem, ParsedNeededItemData, RawItemData, RawShoppingListItemData } from "@/sharedTypes/ItemType"
+import { DbRecordShoppingListItem, ParsedRecordShoppingListItem, DbRecordStoredItem } from "@/sharedTypes/ItemType"
 import { SQLiteDatabase } from "expo-sqlite"
 import { V0_SCHEMA, V1_SCHEMA } from "./schemas"
 import { CURRENT_VERSION } from "@/constants/dbVersion"
 
-type MigrationFunction = (db: SQLiteDatabase, storedItems:RawItemData[], storedShoppingList: RawShoppingListItemData[])=>Promise<void>
+type MigrationFunction = (db: SQLiteDatabase, storedItems:DbRecordStoredItem[], storedShoppingList: DbRecordShoppingListItem[])=>Promise<void>
 
 const MIGRATION_STEPS: Record<number, MigrationFunction> = {
   1: async(db, storedItems,storedShoppingList) => {
@@ -58,20 +58,29 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
         PRAGMA user_version = ${CURRENT_VERSION};
       `)
     })
+  },
+  4: async(db) => {
+    await db.withExclusiveTransactionAsync( async(txn) => {
+      await txn.execAsync(`
+        PRAGMA journal_mode = WAL;
+        CREATE TABLE IF NOT EXISTS category (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL);
+        PRAGMA user_version = ${CURRENT_VERSION};
+      `)
+    })    
   }
 }
 
 const getAllStoredData = async(db: SQLiteDatabase) => {
   try {
-    const storedItems: RawItemData[] = await db.getAllAsync('SELECT * FROM item')  
-    const storedShoppingList: RawShoppingListItemData[] = await db.getAllAsync('SELECT * FROM shopping_list_item')
+    const storedItems: DbRecordStoredItem[] = await db.getAllAsync('SELECT * FROM item')  
+    const storedShoppingList: DbRecordShoppingListItem[] = await db.getAllAsync('SELECT * FROM shopping_list_item')
     return {storedItems, storedShoppingList}    
   } catch (e) {
     throw e
   }
 }
 
-const parseStoredItems = (arr: RawItemData[]): { name: string, category: string, amount:string, uid: string, details: string }[] => {
+const parseStoredItems = (arr: DbRecordStoredItem[]): { name: string, category: string, amount:string, uid: string, details: string }[] => {
   const parsedItems = arr.map( rawItem => {
     // const parsed = JSON.parse(rawItem.value)
 
@@ -82,7 +91,7 @@ const parseStoredItems = (arr: RawItemData[]): { name: string, category: string,
 
   return parsedItems
 }
-const parseStoredShoppingListItems = (arr: RawShoppingListItemData[]): { name: string, amount: string, details: string }[] => {
+const parseStoredShoppingListItems = (arr: DbRecordShoppingListItem[]): { name: string, amount: string, details: string }[] => {
   const parsedShoppingListItems = arr.map( rawItem => {
     // const parsed = JSON.parse(rawItem.value)
     const { name, amount, details } = rawItem

@@ -61,12 +61,12 @@ export default function account() {
           <Text>Account</Text>
         </View>
         <View className='rounded-xl border-2  items-start pt-2 pb-2 gap-6 bg-[#E3E8EC]'>
-          <Link href={'/account/details'} className='w-full'>
+          {/* <Link href={'/account/details'} className='w-full'>
             <SettingsButton iconType='Material Icon' iconName='manage-accounts' iconColor='black' iconSize={24} buttonText='Account Details' className={buttonClassName} />
-          </Link>
-          <Link href='/account/changePassword' className='w-full'>
+          </Link> */}
+          {/* <Link href='/account/changePassword' className='w-full'>
             <SettingsButton iconType={'Material Icon'} iconName={'lock'} iconColor='black' iconSize={24} buttonText='Change Password' className={buttonClassName} />
-          </Link>
+          </Link> */}
           <Link href={'/account/share'} className='w-full'>
             <SettingsButton iconType={'Material Community Icon'} iconName={'account-multiple'} iconSize={24} iconColor='black' buttonText='Manage Shared Inventory' className={buttonClassName} />
           </Link>
