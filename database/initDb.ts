@@ -1,4 +1,4 @@
-import { DbRecordShoppingListItem, ParsedRecordShoppingListItem, DbRecordStoredItem } from "@/sharedTypes/ItemType"
+import { DbRecordShoppingListItem, ParsedRecordShoppingListItem, DbRecordStoredItem, ParsedRecordStoredItem } from "@/sharedTypes/ItemType"
 import { SQLiteDatabase } from "expo-sqlite"
 import { V0_SCHEMA, V1_SCHEMA } from "./schemas"
 import { CURRENT_VERSION } from "@/constants/dbVersion"
@@ -20,11 +20,11 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
         const parsedShoppingListItems = parseStoredShoppingListItems(storedShoppingList)
         for(const item of parsedItems){
           const {name,amount,category,uid,details} = item
-          await txn.runAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)',name, amount, category,uid,details)
+          await txn.runAsync('INSERT INTO new_item (name, amount, category, uid, details) VALUES ($,$,$,$,$)',name, amount, category,uid,JSON.stringify(details))
         }
         for(const item of parsedShoppingListItems){
           const {name,details} = item
-          await txn.runAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)',name, details)
+          await txn.runAsync('INSERT INTO new_shopping_list_item (name, details) VALUES ($,$)',name, JSON.stringify(details))
         }
       }
       await txn.execAsync(`
@@ -59,13 +59,22 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
       `)
     })
   },
-  4: async(db) => {
+  4: async(db, storedItems) => {
     await db.withExclusiveTransactionAsync( async(txn) => {
-      await txn.execAsync(`
+      await db.execAsync(`
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS category (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL);
-        PRAGMA user_version = ${CURRENT_VERSION};
       `)
+      if(storedItems){
+        const parsedItems = parseStoredItems(storedItems)
+        const categoriesFromParsedItems = parsedItems.map(item => item.category)
+        const uniqueCategories = new Set(parsedItems)
+        for(const item of uniqueCategories){
+          const { category } = item
+          await txn.runAsync('INSERT INTO category (name) VALUES ($)',category)
+        }
+      }
+      await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
     })    
   }
 }
@@ -80,22 +89,22 @@ const getAllStoredData = async(db: SQLiteDatabase) => {
   }
 }
 
-const parseStoredItems = (arr: DbRecordStoredItem[]): { name: string, category: string, amount:string, uid: string, details: string }[] => {
+const parseStoredItems = (arr: DbRecordStoredItem[]): ParsedRecordStoredItem[] => {
   const parsedItems = arr.map( rawItem => {
     // const parsed = JSON.parse(rawItem.value)
 
     // const { name, category, amount, uid, ...rest } = parsed
     // const details =  {...rest}
-    return { id:rawItem.id ,name:rawItem.name, category:rawItem.category, amount:rawItem.amount, uid:rawItem.uid, details: rawItem.details }
+    return { id:rawItem.id ,name:rawItem.name, category:rawItem.category, amount:rawItem.amount, uid:rawItem.uid, details: JSON.parse(rawItem.details) }
   }) 
 
   return parsedItems
 }
-const parseStoredShoppingListItems = (arr: DbRecordShoppingListItem[]): { name: string, amount: string, details: string }[] => {
+const parseStoredShoppingListItems = (arr: DbRecordShoppingListItem[]):ParsedRecordShoppingListItem[] => {
   const parsedShoppingListItems = arr.map( rawItem => {
     // const parsed = JSON.parse(rawItem.value)
-    const { name, amount, details } = rawItem
-    return { name, amount, details: JSON.parse(details) }
+    const { id, name, amount, details } = rawItem
+    return { name, amount, id, details: JSON.parse(details) }
   }) 
 
   return parsedShoppingListItems
@@ -167,8 +176,6 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
         return
       } 
     }else{
-      // const tables = await db.getAllAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-      // console.log('v0 tables:', tables)
       console.log(`Migration steps do not exist for version ${currentDbVersion}`)
       return
     }
