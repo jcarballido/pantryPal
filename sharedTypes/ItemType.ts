@@ -16,6 +16,11 @@ export interface DbRecordShoppingListItem extends Omit<DbRecordStoredItem, 'cate
 export interface ParsedRecordShoppingListItem extends Omit<DbRecordShoppingListItem,'details'> {
   details:Record<string,string>
 }
+
+export interface DbRecordStoredCategory{
+  id:string;
+  name:string
+}
 // export interface ItemData {
 //   name: string;
 //   amount: string;

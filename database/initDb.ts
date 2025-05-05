@@ -71,7 +71,7 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
         const uniqueCategories = new Set(parsedItems)
         for(const item of uniqueCategories){
           const { category } = item
-          await txn.runAsync('INSERT INTO category (name) VALUES ($)',category)
+          await txn.runAsync('INSERT INTO category (name) VALUES (?)',category)
         }
       }
       await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)

@@ -6,8 +6,8 @@ type ID = ParsedRecordStoredItem['id']
 interface ItemState{
   allStoredItems: ParsedRecordStoredItem[];
   shoppingList: ParsedRecordShoppingListItem[];
-  savedCategories: string[];
-  setSavedCategories: (data: string[]) => void;
+  savedCategories: {id:string,name:string}[];
+  setSavedCategories: (data: {id:string,name:string}[]) => void;
   setShoppingList: (data: ParsedRecordShoppingListItem[]) => void;
   updateShoppingList: (updatedItem: ParsedRecordShoppingListItem)=> void;
   addToShoppingList: (neededItem: ParsedRecordShoppingListItem)=> void;
@@ -17,8 +17,8 @@ interface ItemState{
   addStoredItems: (item: ParsedRecordStoredItem) => void;
   addListItems: (itemArr: ParsedRecordStoredItem[]) => void;
   deleteStoredItems: (idsToDeleteArray: number[]) => void;
-  addCategory:  (category:string) => void;
-  updatedCategory: (updatedCategory:  {oldCategory: string, update:string}) => void;
+  // addCategory:  (category:string) => void;
+  // updatedCategory: (updatedCategory:  {oldCategory: string, update:string}) => void;
   deleteCategory: (categoryToDelete: string) => void;
 }
 
@@ -39,15 +39,15 @@ const useItemStore = create<ItemState>()((set) => ({
   )), 
   addStoredItems:(item) => set((state) => ({allStoredItems:[...state.allStoredItems, item]})),
   addListItems: (itemArr) => set((state) => ({allStoredItems:[...state.allStoredItems,...itemArr]})),
-  addCategory : (category) => set((state)=>({savedCategories:[...state.savedCategories, category]})),
+  // addCategory : (category) => set((state)=>({savedCategories:[...state.savedCategories, category]})),
   addToShoppingList: (neededItem) => set((state)=> ({shoppingList:[...state.shoppingList, neededItem]})),
   deleteStoredItems:(itemIdsToDeleteArray)=>set((state) => ({
     allStoredItems: state.allStoredItems.filter( individualItem => !itemIdsToDeleteArray.includes(parseInt(individualItem.id)))
   })),
   deleteFromShoppingList:(idsToDelete) => set((state) => ({shoppingList:state.shoppingList.filter( individualItem => !idsToDelete.includes(parseInt(individualItem.id)))})),
-  updatedCategory: (updatedCategory) => set((state) => ({
-    savedCategories: state.savedCategories.map( savedCategory => updatedCategory.oldCategory === savedCategory ? updatedCategory.update:savedCategory)
-  })),
+  // updatedCategory: (updatedCategory) => set((state) => ({
+  //   savedCategories: state.savedCategories.map( savedCategory => updatedCategory.oldCategory === savedCategory ? updatedCategory.update:savedCategory)
+  // })),
   deleteCategory:(categoryToDelete)=> set((state)=>({
     savedCategories: []
   }))

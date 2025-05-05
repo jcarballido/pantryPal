@@ -7,10 +7,10 @@ interface Props{
   value: string;
   onChange:(value:string)=>void;
   setCalculatedWidth: React.Dispatch<React.SetStateAction<number | undefined>>;
-  storedCategories: string[]|{id:number, category:string}[]
+  savedCategories: {id:string, name:string}[]
 }
 
-export default function DropdownInput({styles,value,onChange, setCalculatedWidth, storedCategories}: Props) {
+export default function DropdownInput({styles,value,onChange, setCalculatedWidth, savedCategories}: Props) {
 
   // const [category, setCategory] = useState<string>('Select Category...')
   const [expand, setExpand] = useState<boolean>(false)
@@ -51,7 +51,7 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
         </View>
         <View className={`${expand ? '-mt-2 w-full scale-y-100 absolute top-full bg-white':'scale-y-0 hidden'} border-2 border-red-600`} >
           {
-            storedCategories && storedCategories.map( category => {
+            savedCategories && savedCategories.map( category => {
               // console.log('Category registered as string:', category)
               if(typeof category === 'string'){
                 return(
@@ -63,8 +63,8 @@ export default function DropdownInput({styles,value,onChange, setCalculatedWidth
               if(category.id){
                 // console.log('Category registered as object:', category)
                 return(
-                  <Text key={category.id} className='m-2' onPress={()=>setVal(category.category)}>
-                    {category.category}
+                  <Text key={category.id} className='m-2' onPress={()=>setVal(category.name)}>
+                    {category.name}
                   </Text>
                 )  
               }

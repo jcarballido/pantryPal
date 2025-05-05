@@ -12,7 +12,7 @@ import useItemStore from '@/stores/useItemStore'
 
 export default function index() {
 
-  const { allStoredItems, setStoredItems, deleteStoredItems } = useItemStore()
+  const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories } = useItemStore()
 
   const db = useSQLiteContext()
 
@@ -28,10 +28,12 @@ export default function index() {
   useEffect(() => {
     const fetchData = async() => {
       const allItems:DbRecordStoredItem[] = await db.getAllAsync('SELECT * FROM item')
+      const allCategories:{id:string, name:string}[] = await db.getAllAsync('SELECT * FROM category')
       // console.log('All items stored:', allItems)
       const parsedItems: ParsedRecordStoredItem[] = allItems.map((item) => {
         return {id:(item['id']),uid:item.uid,name:item.name, category:item.category, amount:item.amount,details:JSON.parse(item.details)}
       })
+      setSavedCategories(allCategories)
       setStoredItems(parsedItems)
     }
     fetchData()
@@ -39,7 +41,6 @@ export default function index() {
 
   useEffect(() => {
     const categories: string[] = Array.from(new Set(allStoredItems.map(item => {
-      // if(item.category === 'New Category' && typeof(item.newCategory) === 'string') return item.value.newCategory
       return item.category
     })))
     categories.sort((a,b) => a.localeCompare(b))
@@ -52,8 +53,6 @@ export default function index() {
       if(indexOfCurrentCategory !== lengthOfStoredCategories-1) setSelectedCategory(storedCategories[indexOfCurrentCategory+1])
       else setSelectedCategory(storedCategories[0])
     }
-
-    // console.log('All stored items:', allStoredItems)
   }, [allStoredItems])
 
   const barHeight = useBottomTabBarHeight()
@@ -107,8 +106,8 @@ export default function index() {
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
-      <AddItemModal visible={visible} setVisible={setVisible} storedCategories={storedCategories}/>
-      <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} storedCategories={storedCategories}/>
+      <AddItemModal visible={visible} setVisible={setVisible} savedCategories={savedCategories}/>
+      <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} savedCategories={savedCategories}/>
       <View className='flex-0 flex-row justify-between m-4'>
         <Pressable className='bg-primary-action-base max-w-max min-w-12 min-h-12 p-2.5 rounded-xl flex flex-row items-center' onPress={showModal}>
           <Text className='text-text '>Add Item</Text>

@@ -3,8 +3,9 @@ import React, { SetStateAction, useEffect, useState } from 'react'
 // import data from '@/dummyData/data'
 import CategoryItem from './CategoryItem'
 import CategorySearch from './CategorySearch'
-import { ParsedItemData } from '@/sharedTypes/ItemType';
+// import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType';
 import useItemStore from '@/stores/useItemStore';
+import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType';
 
 interface CategoryItemProps {
   selectedCategory: string | null;
@@ -15,10 +16,10 @@ interface CategoryItemProps {
   deleteMode: { status: boolean, category?: string };
   setItemsMarkedForDeletion: React.Dispatch<SetStateAction<number[]>>,
   itemsMarkedForDeletion: number[],
-  categorySpecificItems:ParsedItemData[],
-  setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedItemData[]>>;
-  filteredCategorySpecificItems:ParsedItemData[];
-  setFilteredCategorySpecificItems: React.Dispatch<SetStateAction<ParsedItemData[]>>
+  categorySpecificItems:ParsedRecordStoredItem[],
+  setCategorySpecificItems:React.Dispatch<SetStateAction<ParsedRecordStoredItem[]>>;
+  filteredCategorySpecificItems:ParsedRecordStoredItem[];
+  setFilteredCategorySpecificItems: React.Dispatch<SetStateAction<ParsedRecordStoredItem[]>>
 }
 
 export default function CategoryItems({selectedCategory, classname, editModalVisible, setEditModalVisible, deleteMode, setItemsMarkedForDeletion, itemsMarkedForDeletion, categorySpecificItems, setCategorySpecificItems, filteredCategorySpecificItems, setFilteredCategorySpecificItems}:CategoryItemProps) {
@@ -27,7 +28,7 @@ export default function CategoryItems({selectedCategory, classname, editModalVis
   
   useEffect(() => {
     if(selectedCategory !== null) {
-      const filteredItems:ParsedItemData[] = allStoredItems.filter(item => {
+      const filteredItems:ParsedRecordStoredItem[] = allStoredItems.filter(item => {
         // console.log('Item being filtered:', item)
         // if(!item.newCategory){
           // return item.value.category === selectedCategory

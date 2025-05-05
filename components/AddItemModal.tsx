@@ -20,7 +20,7 @@ type Props = {
   };
   setVisible: React.Dispatch<React.SetStateAction<{ status: boolean }>>;
   // setSavedItems: React.Dispatch<React.SetStateAction<ParsedItemData[]>>;
-  storedCategories: string[]|{id:number, category:string}[]
+  savedCategories: {id:string, name:string}[]
   // setSuccessfulSubmission: boolean
 }
 
@@ -31,14 +31,8 @@ interface FormData {
   [key: string] : string
 }
 
-interface DataFormatted {
-  name: string;
-  amount: string;
-  category: string;
-  [key:string]: string 
-}
 
-export default function AddItemModal({ visible, setVisible, storedCategories }:Props) {
+export default function AddItemModal({ visible, setVisible, savedCategories }:Props) {
 
   const { addStoredItems } = useItemStore()
 
@@ -51,12 +45,8 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
 
   const [ calculatedWidth, setCalculatedWidth ] = useState<number|undefined>(undefined)
   const [ additionalDetails, setAdditionalDetails ] = useState<string[]>([])
-  // const [ newDetail, setNewDetail ] = useState('')
   const [ newDetailName, setNewDetailName ] = useState('')
-  // const [ requiredFieldState, setRequiredFieldState ] = useState<{allTouched: boolean, anyEmptyRequiredFields:boolean}>({allTouched:false, anyEmptyRequiredFields:true})
-  // const [ allTouched, setAllTouched ] = useState<boolean>(false)
   const [ requiredFieldsEmpty, setRequiredFieldsEmpty ] = useState<boolean>(true)
-  // const [selectedLanguage, setSelectedLanguage] = useState();
 
   const handleAddingNewField = () => {
     if(newDetailName === '') return
@@ -71,30 +61,6 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
       return test
     })
   } 
-
-  // const insertNewItem = async(formattedData:{[key:string]:string},name:string) => {
-  //   try{
-  //     await db.withExclusiveTransactionAsync( async(txn) => {
-  //     // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
-  //     console.log('Formatted Data: ', formattedData)
-  //     const returnData = await txn.runAsync('INSERT INTO item(value) VALUES(?) RETURNING *',JSON.stringify(formattedData))
-  //     const lastInsertId = returnData.lastInsertRowId
-  //     const getLastInsertedRowIdData: RawItemData[] = await txn.getAllAsync('SELECT * FROM item WHERE id = ?;',[lastInsertId])
-  //     const { id, value } = getLastInsertedRowIdData[0]
-  //     const parsedData: ParsedItemData = {id, value:JSON.parse(value)}
-  //     console.log('Parsed Data:', parsedData)
-  //     await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
-  //     addItems(parsedData)
-  //     // setSavedItems((prevArray):ParsedItemData[] => {
-  //     //   const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
-  //     //   return addLastInsertedRow
-  //     // })
-  //   })}catch(e){
-  //     console.log('Error inserting item: ', e)
-  //   }
-  // }
-
-  
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
 
@@ -113,29 +79,14 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
       console.log('Error adding new item: ', e)
     }
     reset()
-    // const generatedId = nanoid(10)
-    // const { name, category, amount, newCategory, ...rest } = data
-    // console.log('Category + New Category: ', category, '+', newCategory)
-    // const dataFormatted:DataFormatted = {name, amount,category:'', uid:generatedId, ...rest}
-    // if(newCategory){
-    //   dataFormatted['category'] = newCategory
-    // }else{
-    //   dataFormatted['category'] = category
-    // }
-    // console.log('Formatted Data:', dataFormatted)
-    // try{
-    //   await insertNewItem(dataFormatted, name)
-    // }catch(e){
-    //   console.log('Error inserting data:', e)
-    // }
-    // reset()
+
   }
 
-  const calculateWidth = ( event: LayoutChangeEvent ) => {
-    const { width } = event.nativeEvent.layout
-    setCalculatedWidth(Math.ceil(width))
-    return
-  }
+  // const calculateWidth = ( event: LayoutChangeEvent ) => {
+  //   const { width } = event.nativeEvent.layout
+  //   setCalculatedWidth(Math.ceil(width))
+  //   return
+  // }
   
   useEffect(() => {
     const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '' || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === '') || (inputValues['category'] === 'New Category' && inputValues['newCategory'] === undefined))
@@ -171,7 +122,7 @@ export default function AddItemModal({ visible, setVisible, storedCategories }:P
               required: true
             }}
             render={ ({field:{ value, onChange }}) => (
-              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} storedCategories={storedCategories} />
+              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} savedCategories={savedCategories} />
             )}
           />
           { inputValues['category'] === 'New Category' && 

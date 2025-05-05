@@ -67,8 +67,8 @@ export default function account() {
           {/* <Link href='/account/changePassword' className='w-full'>
             <SettingsButton iconType={'Material Icon'} iconName={'lock'} iconColor='black' iconSize={24} buttonText='Change Password' className={buttonClassName} />
           </Link> */}
-          <Link href={'/account/share'} className='w-full'>
-            <SettingsButton iconType={'Material Community Icon'} iconName={'account-multiple'} iconSize={24} iconColor='black' buttonText='Manage Shared Inventory' className={buttonClassName} />
+          <Link href={'/account/categories'} className='w-full'>
+            <SettingsButton iconType={'Material Community Icon'} iconName={'account-multiple'} iconSize={24} iconColor='black' buttonText='Manage Saved Categories' className={buttonClassName} />
           </Link>
         </View>
       </View>

@@ -12,7 +12,7 @@ import useItemStore from '@/stores/useItemStore';
 interface EditItemModalProps{
   editModalVisible: { status:boolean; item?: ParsedRecordStoredItem};
   setEditModalVisible: React.Dispatch<SetStateAction<{status: boolean, item?: ParsedRecordStoredItem}>>;
-  storedCategories: string[];
+  savedCategories: {id:string, name:string}[];
 }
 
 interface DetailsInterface{
@@ -29,14 +29,7 @@ interface FormData {
   id:string;
 }
 
-// interface DataFormatted {
-//   name: string;
-//   amount: string;
-//   category: string;
-//   [key:string]: string 
-// }
-
-export default function EditItemModal({ editModalVisible, setEditModalVisible, storedCategories }: EditItemModalProps) {
+export default function EditItemModal({ editModalVisible, setEditModalVisible, savedCategories }: EditItemModalProps) {
 
   const { updateStoredItems } = useItemStore()
 
@@ -97,22 +90,13 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
   }
 
   const updateData = async(formattedData:ParsedRecordStoredItem, name:string) => {
-    // console.log('Data to save to db:', formattedData)
     const {name:itemName,amount,category,uid,details,id} = formattedData
     await db.withExclusiveTransactionAsync(async(txn) => {
       await txn.runAsync('UPDATE item SET amount = ?,category = ?, name = ?, uid = ?, details = ? WHERE id = ?',[amount,category,itemName,uid,JSON.stringify(details), JSON.stringify(editModalVisible.item?.id)])
+      await txn.runAsync('INSERT OR IGNORE INTO category (name) VALUES (?)', category)
       await txn.runAsync('UPDATE item_fts SET name = ? WHERE item_id = ?', [ name, `${editModalVisible.item?.id}` ])
     })
     if(editModalVisible.item) updateStoredItems({name,amount,category,uid,details, id})
-    // updateStoredItems({id:JSON.stringify(editModalVisible.item?.id),value:formattedData})
-    // setSavedItems(prev => {
-    //   const updatedItemsArray = prev.map( item => {
-    //     if(item.id === editModalVisible.item?.id){
-    //       return { id: item.id, value: JSON.parse(JSON.stringify(formattedData)) }
-    //     } else {return item}
-    //   })
-    //   return updatedItemsArray
-    // })
     setEditModalVisible({ status: false })
   }
 
@@ -166,7 +150,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
               required: true
             }}
             render={ ({field:{ value, onChange }}) => (
-              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} storedCategories={storedCategories} />
+              <DropdownInput styles='' value={value} onChange={onChange} setCalculatedWidth={setCalculatedWidth} savedCategories={savedCategories} />
             )}
           />
           { inputValues['category'] === 'New Category' && 

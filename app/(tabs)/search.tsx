@@ -5,7 +5,7 @@ import GlobalSearch from '@/components/GlobalSearch'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import AddItemModal from '@/components/AddItemModal'
 import useItemStore from '@/stores/useItemStore'
-import { ParsedItemData } from '@/sharedTypes/ItemType'
+import { ParsedRecordStoredItem } from '@/sharedTypes/ItemType'
 import CategoryItem from '@/components/CategoryItem'
 import EditItemModal from '@/components/EditItemModal'
 
@@ -17,8 +17,8 @@ export default function search() {
   
   const bottomTabBarHeight = useBottomTabBarHeight()
   const [ visible, setVisible ] = useState({status:false})
-  const [ searchResult, setSearchResult ] = useState<ParsedItemData[]>([])
-  const [ editModeVisible, setEditModeVisible] = useState<{status: boolean, item?:ParsedItemData}>({status:false})
+  const [ searchResult, setSearchResult ] = useState<ParsedRecordStoredItem[]>([])
+  const [ editModeVisible, setEditModeVisible] = useState<{status: boolean, item?:ParsedRecordStoredItem}>({status:false})
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
   const [ storedCategories, setStoredCategories ] = useState<string[]>([])
