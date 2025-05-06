@@ -9,7 +9,7 @@ import { deleteCategories } from '@/database/deleteCategories'
 
 export default function categories() {
 
-  const {savedCategories, setSavedCategories, deleteCategory} = useItemStore()
+  const {savedCategories, setSavedCategories, deleteCategory, reservedCategories} = useItemStore()
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<string[]>([])
   const db = useSQLiteContext()
@@ -55,7 +55,7 @@ export default function categories() {
           keyExtractor={item => item.id }
           renderItem={({item}) => {
             return(
-              <SavedCategory item={item} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} />
+              <SavedCategory item={item} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} reservedCategories={reservedCategories} />
             )
           }}
         />

@@ -5,10 +5,11 @@ interface Props{
   item:{id:string,name:string};
   deleteMode:{status:boolean};
   setItemsMarkedForDeletion:React.Dispatch<SetStateAction<string[]>>;
-  itemsMarkedForDeletion:string[]
+  itemsMarkedForDeletion:string[];
+  reservedCategories:string[]
 }
 
-const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedForDeletion}:Props) => {
+const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedForDeletion, reservedCategories}:Props) => {
 
   const [ isChecked, setIsChecked ] = useState(false)
 
@@ -27,15 +28,25 @@ const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedF
       <Text>{item.name}</Text>
         { 
           deleteMode.status
-          ? <View className='mr-4 justify-center '>
-              <Pressable className='' onPress={handleCheck} >
-                {
-                  isChecked
-                  ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
-                  : <View className='size-8 bg-white rounded-lg'></View>
-                }
-              </Pressable>
-            </View>
+          ? reservedCategories.includes(item.name)
+            ? <View className='mr-4 justify-center '>
+                <Pressable className='bg-gray-600' onPress={()=> console.log('Category is reserved')} >
+                  {
+                    isChecked
+                    ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
+                    : <View className='size-8 bg-white rounded-lg'></View>
+                  }
+                </Pressable>
+              </View>
+            : <View className='mr-4 justify-center '>
+                <Pressable className='' onPress={handleCheck} >
+                  {
+                    isChecked
+                    ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
+                    : <View className='size-8 bg-white rounded-lg'></View>
+                  }
+                </Pressable>
+              </View>
           : null
         }
     </View>
