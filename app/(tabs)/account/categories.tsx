@@ -5,20 +5,22 @@ import useItemStore from '@/stores/useItemStore'
 import { useSQLiteContext } from 'expo-sqlite'
 import { DbRecordStoredCategory } from '@/sharedTypes/ItemType'
 import SavedCategory from '@/components/SavedCategory'
+import { deleteCategories } from '@/database/deleteCategories'
 
 export default function categories() {
 
-  const {savedCategories, setSavedCategories} = useItemStore()
+  const {savedCategories, setSavedCategories, deleteCategory} = useItemStore()
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<string[]>([])
+  const db = useSQLiteContext()
 
   const deleteItems = () => {
     console.log('Items to be deleted:', itemsMarkedForDeletion)
+    //Delete from db
+    //Delete from zustand store; re-fetch stored categories
+    const itemsToDelete: string[] = savedCategories.filter(cat => itemsMarkedForDeletion.includes(cat.id)).map(cat => cat.id)
+    deleteCategories(db,itemsToDelete, deleteCategory)
   }
-
-
-  
-  const db = useSQLiteContext()
 
   useEffect(() => {
     const fetchData = async() => {
@@ -62,23 +64,3 @@ export default function categories() {
     </View>
   )
 }
-
-/*
-        { 
-          savedCategories?.map( category => {
-            return(
-              deleteMode.status
-              ? <View className='mr-4 justify-center '>
-                  <Pressable className='' onPress={handleCheck}>
-                    {
-                      isChecked
-                      ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
-                      : <View className='size-8 bg-white rounded-lg'></View>
-                    }
-                  </Pressable>
-                </View>
-              : null
-            )
-          })
-        }
-*/

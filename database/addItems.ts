@@ -41,7 +41,7 @@ export const addShoppingListItems = async(db:SQLiteDatabase, shoppingListItemsTo
       const savedItemIds = itemsMarkedForSaving.map( savedItem => parseInt(savedItem.id) )
       await txn.runAsync(`DELETE FROM shopping_list_item WHERE id IN (${placeHolders})`,savedItemIds)
       deleteFromShoppingList(savedItemIds)
-      itemsMarkedForSaving
+      // itemsMarkedForSaving
   })}catch(e){
     console.log('Error in addShoppingListItem: ',e)
     throw e

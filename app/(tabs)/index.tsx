@@ -12,7 +12,7 @@ import useItemStore from '@/stores/useItemStore'
 
 export default function index() {
 
-  const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories } = useItemStore()
+  const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories, setReservedCategories } = useItemStore()
 
   const db = useSQLiteContext()
 
@@ -53,7 +53,8 @@ export default function index() {
       if(indexOfCurrentCategory !== lengthOfStoredCategories-1) setSelectedCategory(storedCategories[indexOfCurrentCategory+1])
       else setSelectedCategory(storedCategories[0])
     }
-  }, [allStoredItems])
+    setReservedCategories(categories)
+  }, [allStoredItems, ])
 
   const barHeight = useBottomTabBarHeight()
 

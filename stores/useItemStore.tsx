@@ -1,4 +1,4 @@
-import { ParsedRecordStoredItem, ParsedRecordShoppingListItem } from '@/sharedTypes/ItemType'
+import { ParsedRecordStoredItem, ParsedRecordShoppingListItem, DbRecordStoredCategory } from '@/sharedTypes/ItemType'
 import { create } from 'zustand'
 
 type ID = ParsedRecordStoredItem['id']
@@ -7,8 +7,10 @@ interface ItemState{
   allStoredItems: ParsedRecordStoredItem[];
   shoppingList: ParsedRecordShoppingListItem[];
   savedCategories: {id:string,name:string}[];
+  reservedCategories: string[];
   setSavedCategories: (data: {id:string,name:string}[]) => void;
   setShoppingList: (data: ParsedRecordShoppingListItem[]) => void;
+  setReservedCategories: (data:string[]) => void;
   updateShoppingList: (updatedItem: ParsedRecordShoppingListItem)=> void;
   addToShoppingList: (neededItem: ParsedRecordShoppingListItem)=> void;
   deleteFromShoppingList: (idsToDeleteArray: number[])=> void;
@@ -19,16 +21,18 @@ interface ItemState{
   deleteStoredItems: (idsToDeleteArray: number[]) => void;
   // addCategory:  (category:string) => void;
   // updatedCategory: (updatedCategory:  {oldCategory: string, update:string}) => void;
-  deleteCategory: (categoryToDelete: string) => void;
+  deleteCategory: (categoryIdsToDelete: string[]) => void;
 }
 
 const useItemStore = create<ItemState>()((set) => ({
   allStoredItems:[],
   shoppingList: [],
   savedCategories: [],
+  reservedCategories:[],
   setShoppingList: (data) => set({shoppingList:data}),
   setStoredItems: ( data ) => set({allStoredItems:data}),
   setSavedCategories: (data) => set({savedCategories: data}),
+  setReservedCategories: (data) => set({reservedCategories:data}),
   updateStoredItems: ( item ) => set(( state ) => ({
     allStoredItems: state.allStoredItems.map( individualItem => individualItem.id === (item.id) ? item:individualItem)
   })),
@@ -48,8 +52,8 @@ const useItemStore = create<ItemState>()((set) => ({
   // updatedCategory: (updatedCategory) => set((state) => ({
   //   savedCategories: state.savedCategories.map( savedCategory => updatedCategory.oldCategory === savedCategory ? updatedCategory.update:savedCategory)
   // })),
-  deleteCategory:(categoryToDelete)=> set((state)=>({
-    savedCategories: []
+  deleteCategory:(categoriesToDelete)=> set((state)=>({
+    savedCategories: state.savedCategories.filter(cat => !categoriesToDelete.includes(cat.id))
   }))
 }))
 

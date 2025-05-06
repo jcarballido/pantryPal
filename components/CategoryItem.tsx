@@ -72,7 +72,7 @@ export default function CategoryItem({item, setEditModalVisible, deleteMode, set
             <View className='flex-1 flex-row mb-2'>
               <Pressable onPress={() => handleEdit(item)} className='bg-primary-action-base min-w-[44] min-h-[44] max-h-[60] rounded-lg flex  justify-center items-center mr-8 py-4'>
                 <MaterialIcons name='edit' size={24} color={'white'} />
-                <Text className='text-base text-white font-bold'>Edit</Text>
+                <Text className ='text-base text-white font-bold'>Edit</Text>
               </Pressable>
               <Pressable onPress={handleFlag} className='min-w-[44] flex justify-center items-center min-h-[44] max-h-[60] rounded-lg border-2 border-red-300 py-4'>
                 <MaterialIcons name='flag' size={24} color='#333333' />
