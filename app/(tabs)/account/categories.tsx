@@ -13,7 +13,7 @@ export default function categories() {
   const {savedCategories, setSavedCategories, deleteCategory, reservedCategories} = useItemStore()
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean, category?:string}>({status:false})
   const [ editMode, setEditMode] = useState<{status:boolean}>({status:false})
-  const [ itemsEdited, setItemsEdited ] = useState<DbRecordStoredCategory[]>([])
+  const [ itemsEdited, setItemsEdited ] = useState<(DbRecordStoredCategory&{newName: string})[]>([])
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<string[]>([])
   const db = useSQLiteContext()
 
@@ -26,13 +26,14 @@ export default function categories() {
   const editItems = async() => {
     // Edit db
     // Edit zustand store
-    // try {
-    //   await updateDbCategories(db,itemsEdited)
-    //   const data: DbRecordStoredCategory[] = await db.getAllAsync('SELECT * FROM category')
-    //   setSavedCategories(data)      
-    // } catch (error) {
-      //   console.log('Error updating categories:', error)
-    // }
+    try {
+      await updateDbCategories(db,itemsEdited)
+      const data: DbRecordStoredCategory[] = await db.getAllAsync('SELECT * FROM category')
+      console.log('Date recieved from data:', data)
+      setSavedCategories(data)      
+    } catch (error) {
+        console.log('Error updating categories:', error)
+    }
     console.log('Items to edit:', itemsEdited)
   }
 
@@ -77,7 +78,7 @@ export default function categories() {
           keyExtractor={item => item.id }
           renderItem={({item}) => {
             return(
-              <SavedCategory item={item} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} reservedCategories={reservedCategories} editMode={editMode} setItemsEdited={setItemsEdited} />
+              <SavedCategory item={item} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} reservedCategories={reservedCategories} editMode={editMode} setItemsEdited={setItemsEdited} itemsEdited={itemsEdited} />
             )
           }}
         />

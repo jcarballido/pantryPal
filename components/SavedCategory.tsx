@@ -8,11 +8,12 @@ interface Props{
   setItemsMarkedForDeletion:React.Dispatch<SetStateAction<string[]>>;
   itemsMarkedForDeletion:string[];
   reservedCategories:string[];
-  setItemsEdited: React.Dispatch<SetStateAction<DbRecordStoredCategory[]>>;
+  itemsEdited: (DbRecordStoredCategory&{newName: string})[];
+  setItemsEdited: React.Dispatch<SetStateAction<(DbRecordStoredCategory&{newName: string})[]>>;
   editMode:{status:boolean}
 }
 
-const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedForDeletion, reservedCategories, editMode, setItemsEdited}:Props) => {
+const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedForDeletion, reservedCategories, editMode, setItemsEdited, itemsEdited}:Props) => {
 
   const [ isChecked, setIsChecked ] = useState(false)
   const [ value, updateText ] = useState(item.name)
@@ -28,45 +29,20 @@ const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedF
   }
 
   useEffect(()=>{
-    setItemsEdited(prev => {
-      const check = prev.map((prevItem:DbRecordStoredCategory) => {
-        console.log('PrevItem Id:', prevItem.id)
-        console.log('item.id', item.id)
-        console.log('Equal IDs:', prevItem.id === item.id)
-
-        return prevItem.id === item.id
+    const exists = itemsEdited.some((editedItem:DbRecordStoredCategory) => editedItem.id === item.id )
+    if( !exists && item.name !== value ) {
+      console.log('This item is not in the array, adding',{name:value})
+      setItemsEdited(prevEditedItems => [...prevEditedItems,{id:item.id, name:item.name,newName:value}])
+    }else{
+      console.log('This item is in the array, updating to:',value)
+      const newArray: ((DbRecordStoredCategory&{newName:string})|null)[] = itemsEdited.map(editedItem => {
+        if(editedItem.id !== item.id) return editedItem
+        return item.name === value ? null : {id:item.id, name:item.name, newName:value}
       })
-      console.log('Previous items edited:', prev)
-      
-      if(check.includes(false)){
-        console.log('This item is not in the array, adding',{name:value})
-        return [...prev,{id:item.id,name:value}]
-      }else{
-        console.log('This item is in the array, updating to:',value)
-        const newArray = prev.map(prevItem => {
-          console.log('PrevItem Id:', prevItem.id)
-          console.log('item.id', item.id)
-          console.log('Equal IDs:', prevItem.id === item.id)
-
-          if(prevItem.id === item.id){
-            console.log('PrevItem Id:', prevItem.id)
-            console.log('item.id', item.id)
-            console.log('Equal IDs:', prevItem.id === item.id)
-            return {id:item.id, name:value}
-          }  
-          else {
-            console.log('Item not found')
-            console.log('PrevItem Id:', prevItem.id)
-            console.log('item.id', item.id)
-            console.log('Equal IDs:', prevItem.id === item.id)
- 
-            return prevItem
-          }
-        })
-        console.log('array after the update:', newArray)
-        return newArray
-      }
-    })
+      const filteredNewArray:(DbRecordStoredCategory&{newName:string})[] = newArray.filter(updatedItem => updatedItem !== null)
+      console.log('array after the update:', newArray)
+      setItemsEdited(filteredNewArray)
+    }
   },[value])
     
   return (
