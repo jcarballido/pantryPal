@@ -10,7 +10,9 @@ interface Props{
   reservedCategories:string[];
   itemsEdited: (DbRecordStoredCategory&{newName: string})[];
   setItemsEdited: React.Dispatch<SetStateAction<(DbRecordStoredCategory&{newName: string})[]>>;
-  editMode:{status:boolean}
+  editMode:{status:boolean};
+  // setResetItemsEdited: React.Dispatch<SetStateAction<boolean>>;
+  // resetItemsEdited: boolean
 }
 
 const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedForDeletion, reservedCategories, editMode, setItemsEdited, itemsEdited}:Props) => {
@@ -44,13 +46,21 @@ const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedF
       setItemsEdited(filteredNewArray)
     }
   },[value])
+  useEffect(()=>{
+    if(itemsEdited.length === 0){
+      updateText(item.name)
+    }
+    if(itemsMarkedForDeletion.length === 0){
+      setIsChecked(false)
+    }
+  },[editMode,deleteMode])
     
   return (
-    <View className='py-4 border-2 my-4'>
+    <View className='py-4 border-2 my-4 flex-1'>
       {
         editMode.status
         ? <TextInput onChangeText={updateText} value={value} />
-        : <Text>{item.name}</Text>
+        : <Text className='flex-1'>{item.name}</Text>
       }
       { 
         deleteMode.status
@@ -68,7 +78,7 @@ const SavedCategory = ({item, deleteMode, itemsMarkedForDeletion,setItemsMarkedF
               <Pressable className='' onPress={handleCheck} >
                 {
                   isChecked
-                  ? <View className='size-8 border items-center justify-center bg-white rounded-lg'><Text>X</Text></View>
+                  ? <View className='size-8 border itemsw-center justify-center bg-white rounded-lg'><Text>X</Text></View>
                   : <View className='size-8 bg-white rounded-lg'></View>
                 }
               </Pressable>

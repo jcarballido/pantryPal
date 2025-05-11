@@ -23,16 +23,6 @@ interface ParentFormData {
   [key: string] : string
 }
 
-// interface FormData {
-//   // data: ParsedNeededItemData
-//   id: string;
-//   name: string;
-//   quantity: string;
-//   details: {[key:string]:string}
-// }
-
-
-
 const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving, setSaveMode, setItemsMarkedForSaving, setClearChecks}: Props) => {
   
   const { savedCategories, setSavedCategories, allStoredItems, addListItems,deleteFromShoppingList } = useItemStore()
@@ -77,120 +67,60 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
       return test
     })
   }
-  
-  // useEffect(()=>{
-    // console.log('Items marked for saving:', itemsMarkedForSaving)
-    // },[itemsMarkedForSaving])
     
-    useEffect(()=>{
-      const categories = allStoredItems.map(item => {
-        return item.category
-      })
-      const uniqueCategories = [...new Set(categories)]
-      setSavedCategories(uniqueCategories)
-      console.log("Items marked for saving in SaveModal mount:", itemsMarkedForSaving)
-    },[])
+  useEffect(()=>{
+    const categories = allStoredItems.map(item => {
+      return {id:item.id, name:item.category}
+    })
+    const uniqueCategories = [...new Set(categories)]
+    setSavedCategories(uniqueCategories)
+    console.log("Items marked for saving in SaveModal mount:", itemsMarkedForSaving)
+  },[])
 
-    useEffect(() => {
-      const vals = watch((value,{name,type})=>{
-        console.log('Value:',value)
-        const categoryValue = value.category
-        const newCategoryValue = value.newCategory
-        const categoryEstablished = categoryValue !== undefined && (categoryValue !== 'New Category' || (newCategoryValue !== undefined && newCategoryValue !== ""))
-            
-        // if categoryValue == undefined, false
-        // if categoryValue == 'New Category' and newCategoryValue == undefined or '', false
-        // const categoryEstablished = categoryValue !== undefined || categoryValue !== "" && (categoryValue === 'New Category' && (newCategoryValue !== "" || newCategoryValue !== undefined ))
-        console.log('Category set? ', categoryEstablished)
-        setCategorySet(categoryEstablished)
-      })
+  useEffect(() => {
+    const vals = watch((value,{name,type})=>{
+      console.log('Value:',value)
+      const categoryValue = value.category
+      const newCategoryValue = value.newCategory
+      const categoryEstablished = categoryValue !== undefined && (categoryValue !== 'New Category' || (newCategoryValue !== undefined && newCategoryValue !== ""))
+          
+      console.log('Category set? ', categoryEstablished)
+      setCategorySet(categoryEstablished)
+    })
 
-      return () => vals.unsubscribe()
-    },[watch])
+    return () => vals.unsubscribe()
+  },[watch])
     
-    const consoleLogItemsToSave = () => {
-      console.log('Items to be saved:', savedCategories)
+  const handleSave = async() => {
+    // console.log('Category:', inputValues['category'])
+    // if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
+    // console.log('Items to store: ', itemsPreparedForSaving.current)
+    const categoryInputValue = watch('category')
+    const category = categoryInputValue === 'New Category' ?  inputValues['newCategory'] : inputValues['category']  
+    console.log('Category value being watched: ', category)
+    // console.log('New Category if listed: ', ca)
+    // const allValues = itemsPreparedForSaving.current.map( item => {
+    //   // const {id} = item
+    //   const values = collectedValues.current[item.id]?.getFormData()
+    //   // console.log('Values returned from')
+    //   return {...values, category}
+    // })
+    // console.log('All values collected: ', allValues)
+    console.log('Items marked for saving:', itemsMarkedForSaving)
+    const allValues = itemsMarkedForSaving.flatMap( shoppingListItem => {
+      const values = collectedValues.current[shoppingListItem.id]?.getFormData()
+      return values ? {...values, category:category} : []
+    })
+    try {
+      addShoppingListItems(db,allValues, addListItems, itemsMarkedForSaving,deleteFromShoppingList)
+    } catch (error) {
+      console.log('Error attempting to save items:', error)
+      return
     }
-    
-    // const handleSave = () => {
-      // // console.log('Items to store:', itemsPreparedForSaving)
-      // console.log('Category:', inputValues['category'])
-      // if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
-      //   console.log('Items to store: ', itemsPreparedForSaving.current)
-      // const category = inputValues['newCategory'] ? inputValues['newCategory'] : inputValues['category'] 
-      // const allValues = itemsPreparedForSaving.current.map( item => {
-      //   // const {id} = item
-      //   const values = collectedValues.current[item.id]?.getFormData()
-      //   // console.log('Values returned from')
-      //   return {...values, category}
-      // })
-      // console.log('All values collected: ', allValues)
-    // }
-    
-    const handleSave = async() => {
-      // console.log('Category:', inputValues['category'])
-      // if(inputValues['newCategory']) console.log('New Category:', inputValues['newCategory'])
-      // console.log('Items to store: ', itemsPreparedForSaving.current)
-      const categoryInputValue = watch('category')
-      const category = categoryInputValue === 'New Category' ?  inputValues['newCategory'] : inputValues['category']  
-      console.log('Category value being watched: ', category)
-      // console.log('New Category if listed: ', ca)
-      // const allValues = itemsPreparedForSaving.current.map( item => {
-      //   // const {id} = item
-      //   const values = collectedValues.current[item.id]?.getFormData()
-      //   // console.log('Values returned from')
-      //   return {...values, category}
-      // })
-      // console.log('All values collected: ', allValues)
-      console.log('Items marked for saving:', itemsMarkedForSaving)
-      const allValues = itemsMarkedForSaving.flatMap( shoppingListItem => {
-        const values = collectedValues.current[shoppingListItem.id]?.getFormData()
-        return values ? {...values, category:category} : []
-      })
-      try {
-        addShoppingListItems(db,allValues, addListItems, itemsMarkedForSaving,deleteFromShoppingList)
-      } catch (error) {
-        console.log('Error attempting to save items:', error)
-        return
-      }
-      setItemsMarkedForSaving([])
-      setSaveModalVisible({status:false})
-      setSaveMode({status:false})          
-    }
-
-  // const insertNewItem = async(formattedData:DataFormatted) => {
-  //   await db.withExclusiveTransactionAsync( async(txn) => {
-  //     // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
-  //     const returnData = await txn.runAsync('INSERT INTO shopping_list_item(name, quantity,details) VALUES(?,?,?) RETURNING *',formattedData.name,formattedData.quantity,JSON.stringify(formattedData.details))
-  //     const lastInsertId = returnData.lastInsertRowId
-  //     const getLastInsertedRowIdData: RawShoppingListItemData[] = await txn.getAllAsync('SELECT * FROM shopping_list_item WHERE id = ?;',[lastInsertId])
-  //     const { id, name, quantity, details } = getLastInsertedRowIdData[0]
-  //     const parsedData: ParsedNeededItemData = {id,name,quantity, details:JSON.parse(details)}
-  //     console.log('Parsed Data:', parsedData)
-  //     await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
-  //     addToShoppingList(parsedData)
-  //     // setSavedItems((prevArray):ParsedItemData[] => {
-  //     //   const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]
-  //     //   return addLastInsertedRow
-  //     // })
-  //   })
-  // }
-  
-  
-  // const onSubmit: SubmitHandler<FormData> = async(data) => {
-  //   const { name, quantity, details } = data
-  //   const dataFormatted:DataFormatted = {name, quantity, details}
-  //   console.log('Formatted Data:', dataFormatted)
-  //   try{
-  //     await insertNewItem(dataFormatted)
-  //   }catch(e){
-  //     console.log('Error inserting data:', e)
-  //   }
-  //   reset()
-  // }
-
-  // Show each item and data from shopping list to be added
-  // Display which category to save item to
+    setItemsMarkedForSaving([])
+    setSaveModalVisible({status:false})
+    setSaveMode({status:false})          
+  }
 
   return (
     <Modal visible={saveModalVisible.status} onRequestClose={
@@ -208,7 +138,7 @@ const SaveModal = ({saveModalVisible, setSaveModalVisible, itemsMarkedForSaving,
           required: true
         }}
         render={ ({field:{ value, onChange }}) => (
-          <DropdownInput styles='' value={value} setCalculatedWidth={setCalculatedWidth} onChange={onChange} storedCategories={savedCategories} />
+          <DropdownInput styles='' value={value} setCalculatedWidth={setCalculatedWidth} onChange={onChange} savedCategories={savedCategories} />
         )}
       />
       { inputValues['category'] === 'New Category' && 
