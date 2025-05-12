@@ -8,14 +8,16 @@ import { ParsedRecordShoppingListItem, DbRecordShoppingListItem } from '@/shared
 import ShoppingListItem from '@/components/ShoppingListItem'
 import AddShoppingListItemModal from '@/components/AddShoppingListItemModal'
 import SaveModal from '@/components/SaveModal'
+import EditShoppingListItemModal from '@/components/EditShoppingListItemModal'
 
 export default function list() {
 
-  const { shoppingList, setShoppingList, deleteFromShoppingList } = useItemStore()
+  const { shoppingList, setShoppingList, deleteFromShoppingList, savedCategories } = useItemStore()
   const db = useSQLiteContext()
 
   const [ visible, setVisible ] = useState<{status:boolean}>({status:false})
   const [ saveModalVisible, setSaveModalVisible ] = useState<{status:boolean}>({status:false})
+  const [ editModalVisible, setEditModalVisible ] = useState<{status:boolean}>({status:false})
   const [ deleteMode, setDeleteMode ] = useState<{status:boolean}>({status:false})
   const [ saveMode, setSaveMode ] = useState<{status:boolean}>({status:false})
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
@@ -92,6 +94,7 @@ export default function list() {
     <View className='flex-1 flex-col bg-primary-base max-w-screen'>
       <AddShoppingListItemModal visible={visible} setVisible={setVisible} />
       <SaveModal saveModalVisible={saveModalVisible} setSaveModalVisible={setSaveModalVisible} itemsMarkedForSaving={itemsMarkedForSaving} setSaveMode={setSaveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} setClearChecks={setClearChecks} />
+      <EditShoppingListItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} savedCategories={savedCategories} /> 
       <View className='flex items-center justify-center mr-4'>
         {
           deleteMode.status
@@ -125,7 +128,7 @@ export default function list() {
           data={shoppingList}
           renderItem={({item})=>{
             return(
-              <ShoppingListItem item={item} saveMode={saveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} itemsMarkedForSaving={itemsMarkedForSaving} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} clearChecks={clearChecks} />
+              <ShoppingListItem item={item} saveMode={saveMode} setItemsMarkedForSaving={setItemsMarkedForSaving} itemsMarkedForSaving={itemsMarkedForSaving} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} clearChecks={clearChecks} setEditModalVisible={setEditModalVisible} />
             )
           }}
         />
