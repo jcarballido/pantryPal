@@ -20,18 +20,9 @@ interface DetailsInterface{
   [key:string]:string
 }
 
-// interface FormData {
-//   name:string;
-//   category:string;
-//   amount:string;
-//   details: DetailsInterface ;
-//   newCategory?:string;
-//   uid:string;
-//   id:string;
-// }
-
 interface FormData extends DbRecordStoredCategory{
-  amount:string
+  amount:string;
+  details: {[key:string]:string}
 }
 
 export default function EditShoppingListItemModal({ editModalVisible, setEditModalVisible, savedCategories }: EditShoppingListItemModalProps) {
@@ -49,13 +40,13 @@ export default function EditShoppingListItemModal({ editModalVisible, setEditMod
   
   const inputValues = watch()
 
-  // const handleAddingNewField = () => {
-  //   if(newDetailName === '') return
-  //   setAdditionalDetails(prevArr => {
-  //     console.log('Prev arr:', prevArr )
-  //     return [ ...prevArr, newDetailName ]})
-  //   setNewDetailName('')
-  // }
+  const handleAddingNewField = () => {
+    // if(newDetailName === '') return
+    // setAdditionalDetails(prevArr => {
+    //   console.log('Prev arr:', prevArr )
+    //   return [ ...prevArr, newDetailName ]})
+    // setNewDetailName('')
+  }
   
   useEffect(() => {
     const areRequiredFieldsEmpty = requiredInputNames.some(field => inputValues[field] === undefined || inputValues[field].trim() === '')
@@ -75,16 +66,17 @@ export default function EditShoppingListItemModal({ editModalVisible, setEditMod
     }
   },[editModalVisible.item])
   
-  // const handleNewDetailRemoval = (detailString:string) => {
-  //   setAdditionalDetails( prevArr => {
-  //     const copy = [...prevArr]
+  const handleNewDetailRemoval = (detailString:string) => {
+    // setAdditionalDetails( prevArr => {
+    //   const copy = [...prevArr]
 
-  //     const test = copy.filter( detail => {
-  //       return JSON.stringify(detail) !== JSON.stringify(detailString) 
-  //     })
-  //     return test
-  //   })
-  // }
+    //   const test = copy.filter( detail => {
+    //     return JSON.stringify(detail) !== JSON.stringify(detailString) 
+    //   })
+    //   return test
+    // })
+    
+  }
 
   // const updateData = async(formattedData:ParsedRecordStoredItem, name:string) => {
   //   const {name:itemName,amount,category,uid,details,id} = formattedData
@@ -140,8 +132,8 @@ export default function EditShoppingListItemModal({ editModalVisible, setEditMod
               <RequiredInput label='Name' placeholderText='Milk, Eggs, Paper Towels' allowableWidth={calculatedWidth} onChange={onChange} onBlur={onBlur} value={value} />
             ) }
           />
-          {/* { touchedFields.name && (inputValues['name'] === '' || inputValues['name'] === undefined) && <Text>Name is a required field.</Text> }
-          <Controller
+          { touchedFields.name && (inputValues['name'] === '' || inputValues['name'] === undefined) && <Text>Name is a required field.</Text> }
+          {/* <Controller
             name='category'
             control={control}
             rules={{
@@ -176,7 +168,7 @@ export default function EditShoppingListItemModal({ editModalVisible, setEditMod
             ) }
           />
           { touchedFields.amount && (inputValues['amount'] === '' || inputValues['amount'] === undefined) && <Text>Amount is a required field.</Text> }
-          {/* <Text className='text-xl mt-5 mb-4'>Additional Details</Text>
+          <Text className='text-xl mt-5 mb-4'>Additional Details</Text>
           {
             additionalDetails.map( (detail, index) => {
               return(
@@ -190,7 +182,7 @@ export default function EditShoppingListItemModal({ editModalVisible, setEditMod
                 />)
             })
           }
-          <AddAdditionalInput allowableWidth={calculatedWidth} numberAddedDetails={additionalDetails.length} handleAddingNewField={handleAddingNewField} newDetailName={newDetailName} setNewDetailName={setNewDetailName} /> */}
+          <AddAdditionalInput allowableWidth={calculatedWidth} numberAddedDetails={additionalDetails.length} handleAddingNewField={handleAddingNewField} newDetailName={newDetailName} setNewDetailName={setNewDetailName} />
         </View>
       </ScrollView>
       <View className='py-10 flex-row justify-around'>

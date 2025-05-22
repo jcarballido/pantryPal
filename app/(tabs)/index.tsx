@@ -91,18 +91,43 @@ export default function index() {
   }
 
   const handleConsoleLog = async() => {
-    const allItems = db.getAllSync('SELECT * FROM item')
-    const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
-    console.log('All items in stored item db', allItems)
-    console.log('All items in stored shopping list db', allShoppingItems)
-    const tables2 = await db.getAllAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-    console.log('v1 tables:',tables2)
-
+    // const allItems = db.getAllSync('SELECT * FROM item')
+    // const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
+    // console.log('All items in stored item db', allItems)
+    // console.log('All items in stored shopping list db', allShoppingItems)
+    const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+    console.log('All tables:', tables2)
+    // tables2.forEach( table =>{
+    //   console.log('All tables:',tables2)
+    // } )
   }
 
   const handleDeleteFTSData = () => {
     db.runSync('DELETE FROM item_fts')
   }
+
+  const getAllDbTables = async () => {
+    console.log('Select All tables button pressed')
+    try {
+      console.log('Getting initial tables')
+      const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+      console.log('Attempting to drop...')
+      tables2.forEach( table =>{
+        console.log('Table being dropped:', table)
+        db.runSync(`DROP TABLE IF EXISTS ${table.name};`)
+      } )
+      console.log('Tables dropped...')
+      console.log('Attempting to get all tables again...')
+
+      const tables3:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+      console.log("All tables recieved:", tables3)
+      tables3.forEach( table =>{
+        console.log('Table:',table)
+      } )
+    } catch (error) {
+      console.log('Error attempting to get or drop:', error)      
+    }
+  } 
 
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
@@ -147,7 +172,8 @@ export default function index() {
               </Pressable>
           }
         </View>
-        </View>
+      </View>
+      <Pressable onPress={getAllDbTables}><Text>Select All tables</Text></Pressable>
       <View style={{paddingBottom:barHeight+30}} className={`flex-1 flex-col`}>
         <CategoryItems selectedCategory={selectedCategory} classname='flex-col' editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} filteredCategorySpecificItems={filteredCategorySpecificItems} setFilteredCategorySpecificItems={setFilteredCategorySpecificItems}/>
       </View>

@@ -12,17 +12,13 @@ interface Props{
   visible: {status: boolean};
   setVisible: React.Dispatch<SetStateAction<{status:boolean}>>
 }
-interface FormData{
-  name: string;
-  amount: string;
-  details : {[key:string]:string};
-}
+interface FormData extends Pick<ParsedRecordShoppingListItem,'name'|'amount'|'details'>{}
 
-interface DataFormatted {
-  name: string;
-  amount: string;
-  details:{[key: string]: string} 
-}
+// interface DataFormatted {
+//   name: string;
+//   amount: string;
+//   details:{[key: string]: string} 
+// }
 
 
 export default function  AddShoppingListItemModal({visible, setVisible}: Props) {
@@ -58,7 +54,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
     })
   }
 
-  const insertNewItem = async(formattedData:DataFormatted) => {
+  const insertNewItem = async(formattedData:FormData) => {
     await db.withExclusiveTransactionAsync( async(txn) => {
       // await txn.runAsync('INSERT INTO item(value) VALUES (?) RETURNING *',JSON.stringify(dataFormatted))
       const returnData = await txn.runAsync('INSERT INTO shopping_list_item(name, amount,details) VALUES(?,?,?) RETURNING *',formattedData.name,formattedData.amount,JSON.stringify(formattedData.details))
@@ -79,7 +75,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
     const { name, amount, details } = data
-    const dataFormatted:DataFormatted = {name, amount, details}
+    const dataFormatted = {name, amount, details}
     // console.log('Formatted Data:', dataFormatted)
     try{
       await insertNewItem(dataFormatted)

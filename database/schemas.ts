@@ -1,9 +1,9 @@
 export const V0_SCHEMA = `
   PRAGMA journal_mode = WAL;
   CREATE TABLE IF NOT EXISTS item (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
-  CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);
   CREATE TABLE IF NOT EXISTS shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
-  CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
+  PRAGMA user_version = 0;
+  
 `;
 
 // export const V1_SCHEMA = `
@@ -40,6 +40,7 @@ export const V3_SCHEMA = `
   ALTER TABLE shopping_list_item
   RENAME COLUMN quantity TO amount; 
 `
+
 export const V4_SCHEMA = `
   PRAGMA journal_mode = WAL;
   CREATE TABLE IF NOT EXISTS categories (id PRIMARY INTEGER KEY NOT NULL, category TEXT NOT NULL)

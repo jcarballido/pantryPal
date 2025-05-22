@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.gzus_nice.pantryPal"
     },
     "web": {
       "bundler": "metro",
@@ -32,15 +33,23 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],[
-      "expo-sqlite",
-      {
-        "enableFTS":true
-      }
+      ],
+      [
+        "expo-sqlite",
+        {
+          "enableFTS": true
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5f327b5e-77a1-4f70-a83e-1e93112ed2c5"
+      }
+    },
+    "owner": "gzus_nice"
   }
 }

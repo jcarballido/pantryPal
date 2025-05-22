@@ -11,9 +11,7 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
       await db.execAsync(`
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS new_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, amount TEXT NOT NULL, category TEXT NOT NULL, details TEXT, uid TEXT NOT NULL);
-        CREATE VIRTUAL TABLE IF NOT EXISTS item_fts USING fts5(name, item_id);
         CREATE TABLE IF NOT EXISTS new_shopping_list_item (id INTEGER PRIMARY KEY NOT NULL, name TEXT, quantity TEXT);
-        CREATE VIRTUAL TABLE IF NOT EXISTS shopping_list_item_fts USING fts5(name, item_id);    
       `)
       if(storedItems && storedShoppingList){
         const parsedItems = parseStoredItems(storedItems)
@@ -35,7 +33,7 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
         ALTER TABLE new_shopping_list_item
         RENAME to shopping_list_item;
       `)
-      await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+      await txn.execAsync(`PRAGMA user_version = 1`)
     })
     return
   },
@@ -44,7 +42,7 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
       await txn.execAsync(`
         ALTER TABLE shopping_list_item
         ADD COLUMN details TEXT;
-        PRAGMA user_version = ${CURRENT_VERSION};
+        PRAGMA user_version = 2;
       `)
     })
     return
@@ -55,7 +53,7 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
         PRAGMA journal_mode = WAL;
         ALTER TABLE shopping_list_item
         RENAME COLUMN quantity TO amount;   
-        PRAGMA user_version = ${CURRENT_VERSION};
+        PRAGMA user_version = 3;
       `)
     })
   },
@@ -74,7 +72,7 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
           await txn.runAsync('INSERT INTO category (name) VALUES (?)',category)
         }
       }
-      await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
+      await txn.execAsync(`PRAGMA user_version = 4;`)
     })    
   }
 }
@@ -112,67 +110,39 @@ const parseStoredShoppingListItems = (arr: DbRecordShoppingListItem[]):ParsedRec
 
 export const migrateDB = async( db: SQLiteDatabase ) => {
 
-  // await db.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
-  // console.log('Current Version set to v0')
-  // await db.execAsync(V0_SCHEMA)    
-  // const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-  // console.log('Current tables:', tables)
-
   const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
-
+  console.log('User Version found during migration init:', userVersion)
+  // await db.runAsync('PRAGMA user_version = 0;')
+  // const userVersion2 = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+  // console.log('User Version found during migration init:', userVersion2)
+  // await db.execAsync(V0_SCHEMA)
 
   let currentDbVersion = userVersion ? userVersion.user_version : 0
 
-  if(!CURRENT_VERSION) {
-    await db.execAsync(V0_SCHEMA)
-    console.log('Current version is 0. Schema v0 applied.')
-    return
+  if(currentDbVersion === 0) {
+    try {
+      await db.execAsync(V0_SCHEMA)
+      console.log('Current version is 0. Schema v0 applied.')
+    } catch (error) {
+      console.log('Error applying schema v0:', error)
+    }
   }else{
     console.log('Current version has been updated since v0. Migration will be evaluated.')
   }
 
-  // if(currentDbVersion !== 0 && currentDbVersion === CURRENT_VERSION) {
-  //   console.log(`DB is current at version ${currentDbVersion}; initialized.`)
-  //   const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-  //   console.log('Current tables:', tables)
-  //   return
-  // }
-
-  const storedData = await getAllStoredData(db)      
-  const { storedItems, storedShoppingList } = storedData
-
   while(currentDbVersion <= CURRENT_VERSION){
-    // if(currentDbVersion == 0 && storedItems.length === 0 && storedShoppingList.length === 0){
-    //   try{
-    //     await db.withExclusiveTransactionAsync( async(txn) => {
-    //       console.log('Current version determined as v0.')
-    //       // const dbList = await txn.getFirstAsync('PRAGMA database_list')
-    //       //   const tables = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-    //       //   console.log('v0 tables:', tables)
-    //       await txn.execAsync(V1_SCHEMA);    
-    //       // const tables2 = await db.getFirstAsync("SELECT sql FROM sqlite_master WHERE type='table'")  
-    //       // console.log('v1 tables:',tables2)
-    //       await txn.execAsync(`PRAGMA user_version = ${CURRENT_VERSION}`)
-    //     })
-    //     console.log('DB original version was v0. No data stored; v1 schema  was applied.')
-    //     return
-    //   }catch(e){
-    //     console.log(`Error migrating to the latest schema - v${CURRENT_VERSION}:`, e)
-    //     console.log('Schema set to original - v0.')
-    //     await db.execAsync(V0_SCHEMA)    
-    //     return      
-    //   }
-    // }
     ++currentDbVersion 
     const migrationFn = MIGRATION_STEPS[currentDbVersion]
     if( migrationFn ) {
       try{
         console.log(`Migration function ${migrationFn} running...`)
+        const storedData = await getAllStoredData(db)  
+        console.log('Stored Data found:', storedData)    
+        const { storedItems, storedShoppingList } = storedData
         await migrationFn(db, storedItems,storedShoppingList)
         console.log('Function complete.')
-        return
       } catch(e){
-        console.log(`Error running migration function for version ${currentDbVersion}`)
+        console.log(`Error running migration function for version ${currentDbVersion}`,e)
         return
       } 
     }else{
@@ -181,3 +151,10 @@ export const migrateDB = async( db: SQLiteDatabase ) => {
     }
   }
 }
+
+
+// export const migrateDB = async(db:SQLiteDatabase) => {
+//   await db.execAsync(`PRAGMA user_version = 0;`)
+//   const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+//   console.log('User Version found during migration init:', userVersion)
+// }
