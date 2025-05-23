@@ -63,7 +63,7 @@ export default function  AddShoppingListItemModal({visible, setVisible}: Props) 
       const { id, name, amount, details } = getLastInsertedRowIdData[0]
       const parsedData: ParsedRecordShoppingListItem = {id,name,amount, details:JSON.parse(details)}
       // console.log('Parsed Data:', parsedData)
-      await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
+      // await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, id) 
       addToShoppingList(parsedData)
       // setSavedItems((prevArray):ParsedItemData[] => {
       //   const addLastInsertedRow: ParsedItemData[] = [...prevArray, parsedData]

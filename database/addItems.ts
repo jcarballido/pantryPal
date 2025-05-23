@@ -14,7 +14,7 @@ export const addItems = async(db:SQLiteDatabase, newItem:Omit<ParsedRecordStored
       const parsedData: ParsedRecordStoredItem = {id:item.id, amount: item.amount, category: item.category, name: item.name, uid:item.uid, details:JSON.parse(item.details)}
       console.log('Parsed Data:', parsedData)
       await txn.runAsync('INSERT OR IGNORE INTO category (name) VALUES (?)', category)
-      await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, item.id) 
+      // await txn.runAsync('INSERT INTO item_fts (name, item_id) VALUES (?,?)', name, item.id) 
       addStoredItems(parsedData)
   })}catch(e){
     console.log('Error inserting item: ', e)

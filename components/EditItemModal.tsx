@@ -94,7 +94,7 @@ export default function EditItemModal({ editModalVisible, setEditModalVisible, s
     await db.withExclusiveTransactionAsync(async(txn) => {
       await txn.runAsync('UPDATE item SET amount = ?,category = ?, name = ?, uid = ?, details = ? WHERE id = ?',[amount,category,itemName,uid,JSON.stringify(details), JSON.stringify(editModalVisible.item?.id)])
       await txn.runAsync('INSERT OR IGNORE INTO category (name) VALUES (?)', category)
-      await txn.runAsync('UPDATE item_fts SET name = ? WHERE item_id = ?', [ name, `${editModalVisible.item?.id}` ])
+      // await txn.runAsync('UPDATE item_fts SET name = ? WHERE item_id = ?', [ name, `${editModalVisible.item?.id}` ])
     })
     if(editModalVisible.item) updateStoredItems({name,amount,category,uid,details, id})
     setEditModalVisible({ status: false })

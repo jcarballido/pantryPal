@@ -129,6 +129,12 @@ export default function index() {
     }
   } 
 
+  const resetSchema = async() => {
+  await db.execAsync(`PRAGMA user_version = 0`)
+  const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+  console.log('User version after reset: ', userVersion)
+  }
+
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
@@ -174,6 +180,8 @@ export default function index() {
         </View>
       </View>
       <Pressable onPress={getAllDbTables}><Text>Select All tables</Text></Pressable>
+      <Pressable onPress={resetSchema}><Text>Reset Schema to 0</Text></Pressable>
+
       <View style={{paddingBottom:barHeight+30}} className={`flex-1 flex-col`}>
         <CategoryItems selectedCategory={selectedCategory} classname='flex-col' editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} deleteMode={deleteMode} setItemsMarkedForDeletion={setItemsMarkedForDeletion} itemsMarkedForDeletion={itemsMarkedForDeletion} categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} filteredCategorySpecificItems={filteredCategorySpecificItems} setFilteredCategorySpecificItems={setFilteredCategorySpecificItems}/>
       </View>
