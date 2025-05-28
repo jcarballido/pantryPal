@@ -9,13 +9,26 @@ import AddItemModal from '@/components/AddItemModal'
 import { useSQLiteContext } from 'expo-sqlite'
 import EditItemModal from '@/components/EditItemModal'
 import useItemStore from '@/stores/useItemStore'
+import { Redirect } from 'expo-router'
+// import 'react-native-url-polyfill/auto' // required for React Native
+
+// if (typeof global.WebSocket !== 'function') {
+//   global.WebSocket = global.originalWebSocket || global.WebSocket;
+// }
 
 export default function index() {
+
+  const loggedIn = false
+
+  if(!loggedIn){
+    return <Redirect href='/login' />
+    // console.log('Is not logged in')
+  }
 
   const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories, setReservedCategories } = useItemStore()
 
   const db = useSQLiteContext()
-
+4
   const [ visible, setVisible ] = useState({ status: false }) 
   const [ editModalVisible, setEditModalVisible ] = useState({ status: false }) 
   const [ storedCategories, setStoredCategories ] = useState<string[]>([])
