@@ -10,6 +10,10 @@ import { useSQLiteContext } from 'expo-sqlite'
 import EditItemModal from '@/components/EditItemModal'
 import useItemStore from '@/stores/useItemStore'
 import { Redirect } from 'expo-router'
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession(); // required for web only
+
 // import 'react-native-url-polyfill/auto' // required for React Native
 
 // if (typeof global.WebSocket !== 'function') {

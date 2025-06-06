@@ -7,11 +7,22 @@
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme":"madeUpScheme",
+    "scheme":"madeupscheme",
+    "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [{
+            "scheme": "madeupscheme",
+            "pathPrefix":"/login"
+          }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
