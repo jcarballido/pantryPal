@@ -1,6 +1,5 @@
 import { View, Text, Pressable, ScrollView, StatusBar, Modal } from 'react-native'
 import React, { useEffect, useState } from 'react'
-// import data from '../../dummyData/data'
 import CategoryItems from '@/components/CategoryItems'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import CategorySearch from '@/components/CategorySearch'
@@ -14,25 +13,18 @@ import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 
-// import 'react-native-url-polyfill/auto' // required for React Native
-
-// if (typeof global.WebSocket !== 'function') {
-//   global.WebSocket = global.originalWebSocket || global.WebSocket;
-// }
-
 export default function index() {
 
+  console.log('index has mounted')
   const loggedIn = false
 
   if(!loggedIn){
     return <Redirect href='/login' />
-    // console.log('Is not logged in')
   }
 
   const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories, setReservedCategories } = useItemStore()
 
   const db = useSQLiteContext()
-4
   const [ visible, setVisible ] = useState({ status: false }) 
   const [ editModalVisible, setEditModalVisible ] = useState({ status: false }) 
   const [ storedCategories, setStoredCategories ] = useState<string[]>([])
@@ -178,7 +170,7 @@ export default function index() {
               <Text className='m-1'>{ category }</Text>
             </Pressable> 
           )
-        })}
+       })}
       </ScrollView>
       <View className='flex flex-row justify-between'>
         <CategorySearch defaultValue='Search Category' categorySpecificItems={categorySpecificItems} setCategorySpecificItems={setCategorySpecificItems} filteredCategorySpecificItems={filteredCategorySpecificItems} setFilteredCategorySpecificItems={setFilteredCategorySpecificItems}/>

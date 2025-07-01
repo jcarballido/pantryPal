@@ -74,6 +74,25 @@ const MIGRATION_STEPS: Record<number, MigrationFunction> = {
       }
       await txn.execAsync(`PRAGMA user_version = 4;`)
     })    
+  },
+  5: async(db) => {
+    await db.withExclusiveTransactionAsync( async(txn) => {
+      await txn.execAsync(`
+        CREATE TABLE temp_shopping_list_items_table (
+          id INTEGER PRIMARY KEY NOT NULL,
+          name TEXT NOT NULL,
+          amount TEXT NOT NULL,
+          details TEXT  
+        );
+        INSERT INTO temp_shopping_list_items_table SELECT * FROM shopping_list_item;
+        DROP TABLE shopping_list_item;
+        ALTER TABLE temp_shopping_list_items_table RENAME TO shopping_list_item;
+        
+      `)
+      await txn.execAsync(`
+        PRAGMA user_version = 5;  
+      `)
+    })
   }
 }
 

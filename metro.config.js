@@ -5,6 +5,7 @@ const { withNativeWind } = require("nativewind/metro");
 const config = getDefaultConfig(__dirname);
 
 config.resolver.unstable_enablePackageExports = false;
+// config.transformer.assetPlugins = ['expo-asset/tools/hashAssetFiles'];
 
 
 module.exports = withNativeWind(config, { input: "./global.css" });
