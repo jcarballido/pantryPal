@@ -78,7 +78,7 @@ export default function login() {
   return (
     <View className='flex flex-col gap-2 grow items-center bg-white'>
       <View className='border self-start absolute left-8'>
-        <Text onPress={() => router.back()}>
+        <Text onPress={() => router.push('/(auth)/login')}>
           BACK
         </Text>
       </View>

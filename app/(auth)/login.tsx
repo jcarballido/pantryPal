@@ -1,84 +1,90 @@
 import React, { useEffect, useState } from 'react';
-// import { supabase } from '../../utilities/supabase' // your configured Supabase client
-// import * as AuthSession from 'expo-auth-session';
-// import { Button, View, Text } from 'react-native';
 import { Button, Pressable, Text, TextInput, View } from "react-native";
 import { makeRedirectUri } from "expo-auth-session";
-// import * as Google from "expo-auth-session/providers/google";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { supabase } from "../../utilities/supabase";
-import { useRouter } from 'expo-router';
-// import { useEffect } from "react";
-//
+import { Redirect, useRouter } from 'expo-router';
+import useAuthStore from '@/stores/useAuthStore';
+
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 
 const redirectTo = makeRedirectUri({path:'login'});
 
-const createSessionFromUrl = async (url: string) => {
-  const { params, errorCode } = QueryParams.getQueryParams(url);
-  if (errorCode) {
-    console.log('Error in query params:', errorCode)
-    throw new Error(errorCode)
-  };
-  const { access_token, refresh_token } = params;
-  if (!access_token) {
-    console.log('No access token from createSessionFromURL.')
-    return
-  };
-  const { data, error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token,
-  });
-  if (error) {
-    console.log('Error from supabase setSession:', error)  
-    throw error
-  };
-  return data.session;
-};
-
-const performOAuth = async () => {
-
-  await supabase.auth.signOut();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo,
-      skipBrowserRedirect:true,
-      queryParams: {
-        prompt: 'select_account'
-      },
-    },
-  });
-
-  if (error) {
-    console.log('Error from signInWithOAuth:', error)
-    throw error
-  };
-  if (data) console.log('Data URL recieved from signIn:', data.url)
-  console.log("Opening browser...")
-
-  try{
-    const res = await WebBrowser.openAuthSessionAsync(
-      data.url ,
-      redirectTo
-    );
-    console.log('Response from openAuthSession:', res)
-    if (res.type === "success") {
-      const { url } = res;
-      const sessionData = await createSessionFromUrl(url);
-      console.log('Session Data:', sessionData)
-    }
-  }catch(e){
-    console.log('Error opening Auth session:',e)
-  }
-};
-
-
 export default function login() {
   
+  const {sessionData,setSession, setUser} = useAuthStore()
+
+  const createSessionFromUrl = async (url: string) => {
+    const { params, errorCode } = QueryParams.getQueryParams(url);
+    if (errorCode) {
+      console.log('Error in query params:', errorCode)
+      throw new Error(errorCode)
+    };
+    const { access_token, refresh_token } = params;
+    if (!access_token) {
+      console.log('No access token from createSessionFromURL.')
+      return
+    };
+    const { data, error } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
+    });
+    if (error) {
+      console.log('Error from supabase setSession:', error)  
+      throw error
+    };
+    return data.session;
+  };
+
+  const performOAuth = async () => {
+
+    await supabase.auth.signOut();
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        skipBrowserRedirect:true,
+        queryParams: {
+          prompt: 'select_account'
+        },
+      },
+    });
+
+    if (error) {
+      console.log('Error from signInWithOAuth:', error)
+      throw error
+    };
+    // if (data) console.log('Data URL recieved from signIn:', data.url)
+    console.log("Opening browser...")
+
+    try{
+      const res = await WebBrowser.openAuthSessionAsync(
+        data.url ,
+        redirectTo
+      );
+      console.log('Response from openAuthSession:', res)
+      if (res.type === "success") {
+        const { url } = res;
+        const sessionData = await createSessionFromUrl(url);
+        // console.log('Session Data:', sessionData)
+        if(sessionData) setSession(sessionData)
+        if(sessionData?.user) setUser(sessionData.user)
+      }
+    }catch(e){
+      console.log('Error opening Auth session:',e)
+    }
+  };
+
+  useEffect(() => {
+    console.log('Session Data:', sessionData)
+    if(sessionData){
+      router.push('/')
+    }
+  }, [sessionData])
+
   const router = useRouter()
 
   const redirectToSignUp = () => {

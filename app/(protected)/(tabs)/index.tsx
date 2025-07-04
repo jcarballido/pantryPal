@@ -15,11 +15,12 @@ WebBrowser.maybeCompleteAuthSession(); // required for web only
 
 export default function index() {
 
-  console.log('index has mounted')
+  console.log('Landed on index')
   const loggedIn = false
 
   if(!loggedIn){
-    return <Redirect href='/login' />
+    console.log('loggedIn = false, being routed to sign up page')
+    return <Redirect href='/(auth)/signUp' />
   }
 
   const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories, setReservedCategories } = useItemStore()
