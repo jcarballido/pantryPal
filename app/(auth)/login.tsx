@@ -65,7 +65,7 @@ export default function login() {
         data.url ,
         redirectTo
       );
-      console.log('Response from openAuthSession:', res)
+      // console.log('Response from openAuthSession:', res)
       if (res.type === "success") {
         const { url } = res;
         const sessionData = await createSessionFromUrl(url);
@@ -79,9 +79,9 @@ export default function login() {
   };
 
   useEffect(() => {
-    console.log('Session Data:', sessionData)
+    // console.log('Session Data:', sessionData)
     if(sessionData){
-      router.push('/')
+      router.replace('/')
     }
   }, [sessionData])
 
@@ -89,7 +89,7 @@ export default function login() {
 
   const redirectToSignUp = () => {
     console.log('Pressed')
-    router.push('/(auth)/signUp')
+    router.push('./signUp')
   }
 
   const [emailValue, setEmailValue] = useState<string>('')

@@ -10,21 +10,23 @@ import EditItemModal from '@/components/EditItemModal'
 import useItemStore from '@/stores/useItemStore'
 import { Redirect } from 'expo-router'
 import * as WebBrowser from "expo-web-browser";
+import useAuthStore from '@/stores/useAuthStore'
+import { supabase } from '@/utilities/supabase'
 
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 
 export default function index() {
 
+  const {sessionData, user, setSession, setUser, clearSession, clearUser} = useAuthStore() 
+
   console.log('Landed on index')
+  console.log('Session data in  index: ', sessionData)
+  console.log('User in index ', user)
   const loggedIn = false
 
-  if(!loggedIn){
-    console.log('loggedIn = false, being routed to sign up page')
-    return <Redirect href='/(auth)/signUp' />
-  }
-
+  
   const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories, setReservedCategories } = useItemStore()
-
+  
   const db = useSQLiteContext()
   const [ visible, setVisible ] = useState({ status: false }) 
   const [ editModalVisible, setEditModalVisible ] = useState({ status: false }) 
@@ -34,7 +36,11 @@ export default function index() {
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
   const [ filteredCategorySpecificItems, setFilteredCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
-
+  
+  if(!user){
+    console.log('loggedIn = false, being routed to sign up page')
+    return <Redirect href='/(auth)/signUp' />
+  }
   useEffect(() => {
     const fetchData = async() => {
       const allItems:DbRecordStoredItem[] = await db.getAllAsync('SELECT * FROM item')
@@ -112,6 +118,17 @@ export default function index() {
     // } )
   }
 
+  const handleSignOut = async () => {
+
+      console.log('Signing Out...')
+      const {error} = await supabase.auth.signOut()
+      if(error) console.log('Error signing out:', error)
+      clearSession()
+      clearUser()
+      console.log('SUccessfully signed out.')
+      return
+  }
+
   const handleDeleteFTSData = () => {
     db.runSync('DELETE FROM item_fts')
   }
@@ -157,9 +174,12 @@ export default function index() {
         <Pressable className='max-w-max bg-secondary-action-base rounded-xl min-w-12 min-h-12 p-2.5 flex flex-row items-center '>
           <Text className='text-white '>Search All</Text>
         </Pressable>
-        <Pressable onPress={handleConsoleLog}>
-          <Text>Console Log All</Text>
+        <Pressable onPress={handleSignOut}>
+          <Text>Sign Out</Text>
         </Pressable>
+        {/* <Pressable onPress={handleConsoleLog}>
+          <Text>Console Log All</Text>
+        </Pressable> */}
         {/* <Pressable onPress={handleDeleteFTSData}>
           <Text>Delete All FTS data</Text>
         </Pressable> */}
