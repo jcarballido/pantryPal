@@ -7,6 +7,7 @@ import * as Linking from "expo-linking";
 import { supabase } from "../../utilities/supabase";
 import { Redirect, useRouter } from 'expo-router';
 import useAuthStore from '@/stores/useAuthStore';
+import * as SecureStore from 'expo-secure-store'
 
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 
@@ -70,8 +71,11 @@ export default function login() {
         const { url } = res;
         const sessionData = await createSessionFromUrl(url);
         // console.log('Session Data:', sessionData)
-        if(sessionData) setSession(sessionData)
-        if(sessionData?.user) setUser(sessionData.user)
+        if(sessionData) {
+          setSession(sessionData)
+          setUser(sessionData.user)
+          await SecureStore.setItemAsync('session',JSON.stringify(sessionData))
+        }
       }
     }catch(e){
       console.log('Error opening Auth session:',e)

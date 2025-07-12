@@ -12,16 +12,19 @@ import { Redirect } from 'expo-router'
 import * as WebBrowser from "expo-web-browser";
 import useAuthStore from '@/stores/useAuthStore'
 import { supabase } from '@/utilities/supabase'
+import * as SecureStore from 'expo-secure-store'
 
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 
 export default function index() {
 
   const {sessionData, user, setSession, setUser, clearSession, clearUser} = useAuthStore() 
+  
 
   console.log('Landed on index')
-  console.log('Session data in  index: ', sessionData)
-  console.log('User in index ', user)
+  // console.log('Session data in  index: ', sessionData)
+  // console.log('User in index ', user)
+
   const loggedIn = false
 
   
@@ -36,11 +39,31 @@ export default function index() {
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
   const [ filteredCategorySpecificItems, setFilteredCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
+  const [ redirect, setRedirect ] = useState<boolean>(false)
   
-  if(!user){
-    console.log('loggedIn = false, being routed to sign up page')
-    return <Redirect href='/(auth)/signUp' />
-  }
+  useEffect(() => {
+    const checkSessionExists = async() => {
+      try {
+        const existingSession = await SecureStore.getItemAsync('session')
+        // console.log('Existing session check result: ', existingSession)        
+        if(existingSession) {
+          const sess = JSON.parse(existingSession)
+          console.log('Session exists, setting zustand state')    
+          console.log('Parsed session:', sess)
+          console.log('Parsed session user:', sess.user)      
+          setSession(sess)
+          setUser(sess.user)
+        }else{
+          setRedirect(true)
+        }
+        
+      } catch (error) {
+        console.log('Error checking if session exists:', error)
+      }
+    }
+    checkSessionExists()
+    },[])
+  
   useEffect(() => {
     const fetchData = async() => {
       const allItems:DbRecordStoredItem[] = await db.getAllAsync('SELECT * FROM item')
@@ -52,9 +75,9 @@ export default function index() {
       setSavedCategories(allCategories)
       setStoredItems(parsedItems)
     }
-    fetchData()
-  },[])
-
+    if(user) fetchData()
+  },[user])
+  
   useEffect(() => {
     const categories: string[] = Array.from(new Set(allStoredItems.map(item => {
       return item.category
@@ -62,108 +85,114 @@ export default function index() {
     categories.sort((a,b) => a.localeCompare(b))
     setStoredCategories([...categories])
     if(allStoredItems.length > 1 && selectedCategory === null ) setSelectedCategory(categories[0])
-    const numItemsByCateogry = allStoredItems.filter(item => item.category === selectedCategory).length
+      const numItemsByCateogry = allStoredItems.filter(item => item.category === selectedCategory).length
     if(numItemsByCateogry === 0 && storedCategories !== null && selectedCategory !== null) {
       const indexOfCurrentCategory = storedCategories.indexOf(selectedCategory)
       const lengthOfStoredCategories = storedCategories.length
       if(indexOfCurrentCategory !== lengthOfStoredCategories-1) setSelectedCategory(storedCategories[indexOfCurrentCategory+1])
-      else setSelectedCategory(storedCategories[0])
+        else setSelectedCategory(storedCategories[0])
     }
     setReservedCategories(categories)
   }, [allStoredItems, ])
-
+  
   const barHeight = useBottomTabBarHeight()
-
+  
   const showModal = () => {
     setVisible(prev => {return { status: !(prev.status) }})
   }
-
+  
   const enableDelete = () => {
     setDeleteMode({status:true, category:`${selectedCategory}`})
   }
-
+  
   const disableDelete = () => {
     setDeleteMode({status:false})
   }
-
+  
   const handleDelete =  async() => {
     const placeHolders = itemsMarkedForDeletion.map(id => {return '?'}).join()
-
+    
     try {
       await db.runAsync(`DELETE FROM item WHERE id IN (${placeHolders})`,itemsMarkedForDeletion)
       deleteStoredItems(itemsMarkedForDeletion)
       // setSavedItems( prev => {
-      //   const filteredPrevState = prev.filter((item:ParsedItemData) => !itemsMarkedForDeletion.includes(parseInt(item.id)))
-      //   return filteredPrevState
-      // })
-      setItemsMarkedForDeletion([])
-      setDeleteMode({status:false})
-      // console.log('Selected Category:', selectedCategory)
-      // console.log('Number of items in category:', numItemsByCateogry)
-      // console.log('Stored Categories:', storedCategories)
-    } catch (e) {
-      console.log('Error processing delelte:', e)
+        //   const filteredPrevState = prev.filter((item:ParsedItemData) => !itemsMarkedForDeletion.includes(parseInt(item.id)))
+        //   return filteredPrevState
+        // })
+        setItemsMarkedForDeletion([])
+        setDeleteMode({status:false})
+        // console.log('Selected Category:', selectedCategory)
+        // console.log('Number of items in category:', numItemsByCateogry)
+        // console.log('Stored Categories:', storedCategories)
+      } catch (e) {
+        console.log('Error processing delelte:', e)
+      }
     }
-  }
-
-  const handleConsoleLog = async() => {
-    // const allItems = db.getAllSync('SELECT * FROM item')
-    // const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
-    // console.log('All items in stored item db', allItems)
-    // console.log('All items in stored shopping list db', allShoppingItems)
-    const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
-    console.log('All tables:', tables2)
-    // tables2.forEach( table =>{
-    //   console.log('All tables:',tables2)
-    // } )
-  }
-
-  const handleSignOut = async () => {
-
-      console.log('Signing Out...')
-      const {error} = await supabase.auth.signOut()
-      if(error) console.log('Error signing out:', error)
-      clearSession()
-      clearUser()
-      console.log('SUccessfully signed out.')
-      return
-  }
-
-  const handleDeleteFTSData = () => {
-    db.runSync('DELETE FROM item_fts')
-  }
-
-  const getAllDbTables = async () => {
-    console.log('Select All tables button pressed')
-    try {
-      console.log('Getting initial tables')
+    
+    const handleConsoleLog = async() => {
+      // const allItems = db.getAllSync('SELECT * FROM item')
+      // const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
+      // console.log('All items in stored item db', allItems)
+      // console.log('All items in stored shopping list db', allShoppingItems)
       const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
-      console.log('Attempting to drop...')
-      tables2.forEach( table =>{
-        console.log('Table being dropped:', table)
-        db.runSync(`DROP TABLE IF EXISTS ${table.name};`)
-      } )
-      console.log('Tables dropped...')
-      console.log('Attempting to get all tables again...')
-
-      const tables3:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
-      console.log("All tables recieved:", tables3)
-      tables3.forEach( table =>{
-        console.log('Table:',table)
-      } )
-    } catch (error) {
-      console.log('Error attempting to get or drop:', error)      
-    }
-  } 
-
-  const resetSchema = async() => {
-  await db.execAsync(`PRAGMA user_version = 0`)
-  const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
-  console.log('User version after reset: ', userVersion)
-  }
-
-  return (
-    <View className='flex-1 flex-col bg-primary-base max-w-screen' >
+      console.log('All tables:', tables2)
+      // tables2.forEach( table =>{
+        //   console.log('All tables:',tables2)
+        // } )
+      }
+      
+      const handleSignOut = async () => {
+        
+        console.log('Signing Out...')
+        const {error} = await supabase.auth.signOut()
+        if(error) console.log('Error signing out:', error)
+          clearSession()
+        clearUser()
+        await SecureStore.deleteItemAsync('session')
+        setRedirect(true)
+        console.log('SUccessfully signed out.')
+        return
+      }
+      
+      const handleDeleteFTSData = () => {
+        db.runSync('DELETE FROM item_fts')
+      }
+      
+      const getAllDbTables = async () => {
+        console.log('Select All tables button pressed')
+        try {
+          console.log('Getting initial tables')
+          const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+          console.log('Attempting to drop...')
+          tables2.forEach( table =>{
+            console.log('Table being dropped:', table)
+            db.runSync(`DROP TABLE IF EXISTS ${table.name};`)
+          } )
+          console.log('Tables dropped...')
+          console.log('Attempting to get all tables again...')
+          
+          const tables3:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+          console.log("All tables recieved:", tables3)
+          tables3.forEach( table =>{
+            console.log('Table:',table)
+          } )
+        } catch (error) {
+          console.log('Error attempting to get or drop:', error)      
+        }
+      } 
+      
+      const resetSchema = async() => {
+        await db.execAsync(`PRAGMA user_version = 0`)
+        const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+        console.log('User version after reset: ', userVersion)
+      }
+      
+      if(redirect){
+        console.log('loggedIn = false, being routed to sign up page')
+        return <Redirect href='/(auth)/signUp' />
+      }
+      return (
+        <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
       <AddItemModal visible={visible} setVisible={setVisible} savedCategories={savedCategories}/>
       <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} savedCategories={savedCategories}/>
