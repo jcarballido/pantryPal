@@ -5,8 +5,6 @@ import useAuthStore from '@/stores/useAuthStore'
 
 export default function RootLayout() {
 
-  
-
   return (
     <Stack>
       <Stack.Screen name="(protected)" options={{
