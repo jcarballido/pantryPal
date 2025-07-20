@@ -15,7 +15,7 @@ const redirectTo = makeRedirectUri({path:'login'});
 
 export default function login() {
   
-  const {sessionData,setSession, setUser} = useAuthStore()
+  const {sessionData,user,setSession, setUser} = useAuthStore()
 
   const createSessionFromUrl = async (url: string) => {
     const { params, errorCode } = QueryParams.getQueryParams(url);
@@ -82,12 +82,12 @@ export default function login() {
     }
   };
 
-  useEffect(() => {
-    // console.log('Session Data:', sessionData)
-    if(sessionData){
-      router.replace('/')
-    }
-  }, [sessionData])
+  // useEffect(() => {
+  //   // console.log('Session Data:', sessionData)
+  //   if(sessionData){
+  //     router.replace('/')
+  //   }
+  // }, [sessionData])
 
   const router = useRouter()
 
@@ -98,6 +98,10 @@ export default function login() {
 
   const [emailValue, setEmailValue] = useState<string>('')
   const [passwordValue, setPasswordValue] = useState<string>('')
+
+  if(user){
+    return <Redirect href='/(protected)/(tabs)' />
+  }
 
   return (
     <View className='flex flex-col gap-2 grow items-center bg-white'>

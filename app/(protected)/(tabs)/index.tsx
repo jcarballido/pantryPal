@@ -23,7 +23,7 @@ export default function index() {
 
   console.log('Landed on index')
   // console.log('Session data in  index: ', sessionData)
-  // console.log('User in index ', user)
+  console.log('User in index ', user)
 
   const loggedIn = false
 
@@ -39,30 +39,30 @@ export default function index() {
   const [ itemsMarkedForDeletion, setItemsMarkedForDeletion ] = useState<number[]>([])
   const [ categorySpecificItems, setCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
   const [ filteredCategorySpecificItems, setFilteredCategorySpecificItems ] = useState<ParsedRecordStoredItem[]>([])
-  const [ redirect, setRedirect ] = useState<boolean>(false)
+  // const [ redirect, setRedirect ] = useState<boolean>(false)
   
-  useEffect(() => {
-    const checkSessionExists = async() => {
-      try {
-        const existingSession = await SecureStore.getItemAsync('session')
-        // console.log('Existing session check result: ', existingSession)        
-        if(existingSession) {
-          const sess = JSON.parse(existingSession)
-          console.log('Session exists, setting zustand state')    
-          console.log('Parsed session:', sess)
-          console.log('Parsed session user:', sess.user)      
-          setSession(sess)
-          setUser(sess.user)
-        }else{
-          setRedirect(true)
-        }
+  // useEffect(() => {
+  //   const checkSessionExists = async() => {
+  //     try {
+  //       const existingSession = await SecureStore.getItemAsync('session')
+  //       // console.log('Existing session check result: ', existingSession)        
+  //       if(existingSession) {
+  //         const sess = JSON.parse(existingSession)
+  //         console.log('Session exists, setting zustand state')    
+  //         console.log('Parsed session:', sess)
+  //         console.log('Parsed session user:', sess.user)      
+  //         setSession(sess)
+  //         setUser(sess.user)
+  //       }else{
+  //         setRedirect(true)
+  //       }
         
-      } catch (error) {
-        console.log('Error checking if session exists:', error)
-      }
-    }
-    checkSessionExists()
-    },[])
+  //     } catch (error) {
+  //       console.log('Error checking if session exists:', error)
+  //     }
+  //   }
+  //   checkSessionExists()
+  //   },[])
   
   useEffect(() => {
     const fetchData = async() => {
@@ -129,70 +129,70 @@ export default function index() {
       }
     }
     
-    const handleConsoleLog = async() => {
-      // const allItems = db.getAllSync('SELECT * FROM item')
-      // const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
-      // console.log('All items in stored item db', allItems)
-      // console.log('All items in stored shopping list db', allShoppingItems)
+  const handleConsoleLog = async() => {
+    // const allItems = db.getAllSync('SELECT * FROM item')
+    // const allShoppingItems = db.getAllSync('SELECT * FROM shopping_list_item')    
+    // console.log('All items in stored item db', allItems)
+    // console.log('All items in stored shopping list db', allShoppingItems)
+    const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+    console.log('All tables:', tables2)
+    // tables2.forEach( table =>{
+      //   console.log('All tables:',tables2)
+      // } )
+    }
+    
+  const handleSignOut = async () => {
+    
+    console.log('Signing Out...')
+    const {error} = await supabase.auth.signOut()
+    if(error) console.log('Error signing out:', error)
+    //   clearSession()
+    //   clearUser()
+    // await SecureStore.deleteItemAsync('session')
+    // // setRedirect(true)
+    // console.log('SUccessfully signed out.')
+    return
+  }
+  
+  const handleDeleteFTSData = () => {
+    db.runSync('DELETE FROM item_fts')
+  }
+  
+  const getAllDbTables = async () => {
+    console.log('Select All tables button pressed')
+    try {
+      console.log('Getting initial tables')
       const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
-      console.log('All tables:', tables2)
-      // tables2.forEach( table =>{
-        //   console.log('All tables:',tables2)
-        // } )
-      }
+      console.log('Attempting to drop...')
+      tables2.forEach( table =>{
+        console.log('Table being dropped:', table)
+        db.runSync(`DROP TABLE IF EXISTS ${table.name};`)
+      } )
+      console.log('Tables dropped...')
+      console.log('Attempting to get all tables again...')
       
-      const handleSignOut = async () => {
-        
-        console.log('Signing Out...')
-        const {error} = await supabase.auth.signOut()
-        if(error) console.log('Error signing out:', error)
-          clearSession()
-        clearUser()
-        await SecureStore.deleteItemAsync('session')
-        setRedirect(true)
-        console.log('SUccessfully signed out.')
-        return
-      }
-      
-      const handleDeleteFTSData = () => {
-        db.runSync('DELETE FROM item_fts')
-      }
-      
-      const getAllDbTables = async () => {
-        console.log('Select All tables button pressed')
-        try {
-          console.log('Getting initial tables')
-          const tables2:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
-          console.log('Attempting to drop...')
-          tables2.forEach( table =>{
-            console.log('Table being dropped:', table)
-            db.runSync(`DROP TABLE IF EXISTS ${table.name};`)
-          } )
-          console.log('Tables dropped...')
-          console.log('Attempting to get all tables again...')
-          
-          const tables3:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
-          console.log("All tables recieved:", tables3)
-          tables3.forEach( table =>{
-            console.log('Table:',table)
-          } )
-        } catch (error) {
-          console.log('Error attempting to get or drop:', error)      
-        }
-      } 
-      
-      const resetSchema = async() => {
-        await db.execAsync(`PRAGMA user_version = 0`)
-        const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
-        console.log('User version after reset: ', userVersion)
-      }
-      
-      if(redirect){
-        console.log('loggedIn = false, being routed to sign up page')
-        return <Redirect href='/(auth)/signUp' />
-      }
-      return (
-        <View className='flex-1 flex-col bg-primary-base max-w-screen' >
+      const tables3:{name:string}[] = await db.getAllAsync("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ;")  
+      console.log("All tables recieved:", tables3)
+      tables3.forEach( table =>{
+        console.log('Table:',table)
+      } )
+    } catch (error) {
+      console.log('Error attempting to get or drop:', error)      
+    }
+  } 
+  
+  const resetSchema = async() => {
+    await db.execAsync(`PRAGMA user_version = 0`)
+    const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
+    console.log('User version after reset: ', userVersion)
+  }
+  
+  // if(!user){
+  //   console.log('loggedIn = false, being routed to sign up page')
+  //   return <Redirect href='/(auth)/signUp' />
+  // }
+  return (
+    <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />
       <AddItemModal visible={visible} setVisible={setVisible} savedCategories={savedCategories}/>
       <EditItemModal editModalVisible={editModalVisible} setEditModalVisible={setEditModalVisible} savedCategories={savedCategories}/>
