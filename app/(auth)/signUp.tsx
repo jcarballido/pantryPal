@@ -4,7 +4,8 @@ import { makeRedirectUri } from "expo-auth-session";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";
 import { supabase } from "../../utilities/supabase";
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
+import useAuthStore from '@/stores/useAuthStore';
 
 const redirectTo = makeRedirectUri({path:'login'});
 
@@ -74,6 +75,24 @@ export default function login() {
   const [passwordValue, setPasswordValue] = useState<string>('')
 
   const router = useRouter()
+  const {user} = useAuthStore()
+
+  const handleSignUpWithEmail = async() => {
+    try {
+      const {data,error} = await supabase.auth.signUp({
+        email:emailValue,
+        password:passwordValue
+      })
+      console.log('Data recieved from user sign up:', data)
+      if (error) throw error
+    } catch (error) {
+      console.log('Error signing up new user:', error)
+    }
+  }
+
+  if(user){
+    return <Redirect href='/(protected)/(tabs)' />
+  }
   
   return (
     <View className='flex flex-col gap-2 grow items-center bg-white'>
@@ -84,11 +103,11 @@ export default function login() {
       </View>
       <Text className='p-8 my-10'>LOGO</Text>
       <View className='flex grow w-full p-8 gap-4'>
-        <Text className='text-lg font-bold'>Login to Your Account</Text>
+        <Text className='text-lg font-bold'>Create Your Account</Text>
         <TextInput className='border w-full text-gray rounded-lg px-4 py-3 text-lg' placeholderTextColor='#9CA3AF' value={emailValue} onChangeText={setEmailValue} placeholder='Email' />
         <TextInput className='border w-full rounded-lg px-4 py-3 text-lg' value={passwordValue} onChangeText={setPasswordValue} placeholder='Password' placeholderTextColor='#9CA3AF' />
-        <TextInput className='border w-full rounded-lg px-4 py-3 text-lg' value={passwordValue} onChangeText={setPasswordValue} placeholder='Confirm Password' placeholderTextColor='#9CA3AF' />
-        <Pressable className='w-full border flex items-center bg-blue-300 p-5 rounded-xl '>
+        {/* <TextInput className='border w-full rounded-lg px-4 py-3 text-lg' value={passwordValue} onChangeText={setPasswordValue} placeholder='Confirm Password' placeholderTextColor='#9CA3AF' /> */}
+        <Pressable className='w-full border flex items-center bg-blue-300 p-5 rounded-xl ' onPress={handleSignUpWithEmail}>
           <Text className=''>
             Sign Up
           </Text>

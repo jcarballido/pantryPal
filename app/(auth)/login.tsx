@@ -82,6 +82,19 @@ export default function login() {
     }
   };
 
+  const handlePasswordSignIn = async() => {
+    const {data, error} = await supabase.auth.signInWithPassword({
+      email:emailValue,
+      password:passwordValue
+    })
+    if(error) console.log('Error signing in:', error)
+    if(data.session) {
+      setSession(data.session)
+      setUser(data.user)
+      await SecureStore.setItemAsync('session',JSON.stringify(data.session))
+    }
+  }
+
   // useEffect(() => {
   //   // console.log('Session Data:', sessionData)
   //   if(sessionData){
@@ -110,7 +123,7 @@ export default function login() {
         <Text className='text-lg font-bold'>Login to Your Account</Text>
         <TextInput className='border w-full text-gray rounded-lg px-4 py-3 text-lg' placeholderTextColor='#9CA3AF' value={emailValue} onChangeText={setEmailValue} placeholder='Email' />
         <TextInput className='border w-full rounded-lg px-4 py-3 text-lg' value={passwordValue} onChangeText={setPasswordValue} placeholder='Password' placeholderTextColor='#9CA3AF' />
-        <Pressable className='w-full border flex items-center bg-blue-300 p-5 rounded-xl'>
+        <Pressable className='w-full border flex items-center bg-blue-300 p-5 rounded-xl' onPress={handlePasswordSignIn}>
           <Text className=''>
             Sign In
           </Text>
