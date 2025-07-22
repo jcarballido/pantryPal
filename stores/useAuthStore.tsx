@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { Session, User } from '@supabase/supabase-js'
 import * as SecureStore from 'expo-secure-store'
 import { supabase } from "@/utilities/supabase";
+import { makeRedirectUri } from "expo-auth-session";
+import * as WebBrowser from 'expo-web-browser'
+import * as QueryParams from "expo-auth-session/build/QueryParams";
+
 
 interface AuthState {
   sessionData: Session | null,
@@ -11,7 +15,10 @@ interface AuthState {
   clearSession: ()=> void,
   clearUser: () => void,
   loading: boolean|null,
-  initializeSession: () => Promise<void>
+  initializeSession: () => Promise<void>,
+  passwordSignIn: (email:string,password:string) => Promise<void>,
+  performOAuth: () => Promise<void>,
+  signUpWithEmail: (email:string,password:string) => Promise<void>
 }
 
 const useAuthStore = create<AuthState>()((set)=>({
@@ -65,7 +72,93 @@ const useAuthStore = create<AuthState>()((set)=>({
       console.log('Auth initialization complete')
         set({ loading: false })
     }
-  }
+  },
+  passwordSignIn: async(email,password) => {
+    try {
+      const {data, error} = await supabase.auth.signInWithPassword({
+        email,password
+      })
+      if(error) throw error
+      if(data.session){
+        set({sessionData:data.session,user: data.user})
+        await SecureStore.setItemAsync('session',JSON.stringify(data.session))
+      }
+    } catch (error) {
+      await SecureStore.deleteItemAsync('session')
+      throw error
+    }
+  },
+  performOAuth: async() => {
+
+    const createSessionFromUrl = async (url: string) => {
+      const { params, errorCode } = QueryParams.getQueryParams(url);
+      if (errorCode) {
+        console.log('Error in query params:', errorCode)
+        throw new Error(errorCode)
+      };
+      const { access_token, refresh_token } = params;
+      if (!access_token) {
+        console.log('No access token from createSessionFromURL.')
+        return
+      };
+      const { data, error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+      if (error) {
+        console.log('Error from supabase setSession:', error)  
+        throw error
+      };
+      return data.session;
+    };
+
+    const redirectTo = makeRedirectUri({path:'login'});
+  
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        skipBrowserRedirect:true,
+        queryParams: {
+          prompt: 'select_account'
+        },
+      },
+    });
+
+    if (error) {
+      console.log('Error from signInWithOAuth:', error)
+      throw error
+    };
+    console.log("Opening browser...")
+
+    try{
+      const res = await WebBrowser.openAuthSessionAsync(
+        data.url ,
+        redirectTo
+      );
+      if (res.type === "success") {
+        const { url } = res;
+        const sessionData = await createSessionFromUrl(url);
+        if(sessionData) {
+          set({sessionData, user:sessionData.user})
+          await SecureStore.setItemAsync('session',JSON.stringify(sessionData))
+        }
+      }
+    }catch(e){
+      console.log('Error opening Auth session:',e)
+    }
+  },
+  signUpWithEmail: async(email, password) => {
+    try {
+      const {data,error} = await supabase.auth.signUp({
+        email,password
+      })
+      console.log('Data recieved from user sign up:', data)
+      if (error) throw error
+    } catch (error) {
+      throw error
+    }
+  } 
 }))
 
 export default useAuthStore

@@ -11,96 +11,22 @@ import * as SecureStore from 'expo-secure-store'
 
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 
-const redirectTo = makeRedirectUri({path:'login'});
+
 
 export default function login() {
   
-  const {sessionData,user,setSession, setUser} = useAuthStore()
+  const {user, passwordSignIn, performOAuth} = useAuthStore()
 
-  const createSessionFromUrl = async (url: string) => {
-    const { params, errorCode } = QueryParams.getQueryParams(url);
-    if (errorCode) {
-      console.log('Error in query params:', errorCode)
-      throw new Error(errorCode)
-    };
-    const { access_token, refresh_token } = params;
-    if (!access_token) {
-      console.log('No access token from createSessionFromURL.')
-      return
-    };
-    const { data, error } = await supabase.auth.setSession({
-      access_token,
-      refresh_token,
-    });
-    if (error) {
-      console.log('Error from supabase setSession:', error)  
-      throw error
-    };
-    return data.session;
-  };
-
-  const performOAuth = async () => {
-
-    await supabase.auth.signOut();
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        skipBrowserRedirect:true,
-        queryParams: {
-          prompt: 'select_account'
-        },
-      },
-    });
-
-    if (error) {
-      console.log('Error from signInWithOAuth:', error)
-      throw error
-    };
-    // if (data) console.log('Data URL recieved from signIn:', data.url)
-    console.log("Opening browser...")
-
-    try{
-      const res = await WebBrowser.openAuthSessionAsync(
-        data.url ,
-        redirectTo
-      );
-      // console.log('Response from openAuthSession:', res)
-      if (res.type === "success") {
-        const { url } = res;
-        const sessionData = await createSessionFromUrl(url);
-        // console.log('Session Data:', sessionData)
-        if(sessionData) {
-          setSession(sessionData)
-          setUser(sessionData.user)
-          await SecureStore.setItemAsync('session',JSON.stringify(sessionData))
-        }
-      }
-    }catch(e){
-      console.log('Error opening Auth session:',e)
-    }
-  };
+  const [emailValue, setEmailValue] = useState<string>('')
+  const [passwordValue, setPasswordValue] = useState<string>('')
 
   const handlePasswordSignIn = async() => {
-    const {data, error} = await supabase.auth.signInWithPassword({
-      email:emailValue,
-      password:passwordValue
-    })
-    if(error) console.log('Error signing in:', error)
-    if(data.session) {
-      setSession(data.session)
-      setUser(data.user)
-      await SecureStore.setItemAsync('session',JSON.stringify(data.session))
+    try {
+      await passwordSignIn(emailValue,passwordValue)
+    } catch (error) {
+      console.log('Error during sign-on:', error)
     }
   }
-
-  // useEffect(() => {
-  //   // console.log('Session Data:', sessionData)
-  //   if(sessionData){
-  //     router.replace('/')
-  //   }
-  // }, [sessionData])
 
   const router = useRouter()
 
@@ -108,9 +34,6 @@ export default function login() {
     console.log('Pressed')
     router.push('./signUp')
   }
-
-  const [emailValue, setEmailValue] = useState<string>('')
-  const [passwordValue, setPasswordValue] = useState<string>('')
 
   if(user){
     return <Redirect href='/(protected)/(tabs)' />
