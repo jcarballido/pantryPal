@@ -21,134 +21,141 @@ interface AuthState {
   signUpWithEmail: (email:string,password:string) => Promise<void>
 }
 
-const useAuthStore = create<AuthState>()((set)=>({
-  sessionData:null,
-  setSession: (sessionObj) => set({sessionData:sessionObj}),
-  user:null,
-  loading:null,
-  setUser: (userData) => set({user:userData}),
-  clearSession: () => set({sessionData:null}),
-  clearUser: () => set({user:null}),
-  initializeSession: async() => {
-    try {
-      set({ loading: true })
-      const sessionExists = await SecureStore.getItemAsync('session')
-      if(sessionExists){
-        console.log('Existing session found.')
-        const currentSession:Session = JSON.parse(sessionExists)
-        const {data,error} = await supabase.auth.setSession({
-          access_token: currentSession.access_token,
-          refresh_token: currentSession.refresh_token
+const useAuthStore = create<AuthState>()((set) => {
+
+  return {
+    sessionData:null,
+    setSession: (sessionObj) => set({sessionData:sessionObj}),
+    user:null,
+    loading:null,
+    setUser: (userData) => set({user:userData}),
+    clearSession: () => set({sessionData:null}),
+    clearUser: () => set({user:null}),
+    initializeSession: async() => {
+      try {
+        set({ loading: true })
+        const sessionExists = await SecureStore.getItemAsync('session')
+        if(sessionExists){
+          console.log('Existing session found.')
+          const currentSession:Session = JSON.parse(sessionExists)
+          const {data,error} = await supabase.auth.setSession({
+            access_token: currentSession.access_token,
+            refresh_token: currentSession.refresh_token
+          })
+
+          if(!error && data.session){
+            console.log('New session set.')
+            const latestSession = data.session
+            await SecureStore.setItemAsync('session',JSON.stringify(latestSession))
+            set({sessionData:latestSession, user:latestSession.user})
+          }else{
+            console.log('Existing session expired.')
+            await SecureStore.deleteItemAsync('session')
+            throw error
+          } 
+        }else{
+          const {data} = await supabase.auth.getSession()
+          if(data) {
+            console.log('No session data locally stored. Checked with \'getsession\': ',data)
+          }else{
+            console.log('No session found either locally or on the supabase auth server from \'getSession\'.')
+          }
+        }
+
+        supabase.auth.onAuthStateChange(async (event,session) => {
+          console.log('Auth state change detected: ', event)
+          if(session){
+            await SecureStore.setItemAsync('session',JSON.stringify(session))
+            set({sessionData:session, user:session.user})
+          }else{
+            set({loading:true})
+            console.log('Session not detected in state change response')
+            await SecureStore.deleteItemAsync('session')
+            set({sessionData:null,user:null, loading:false})
+          }
         })
 
-        if(!error && data.session){
-          console.log('New session set.')
-          const latestSession = data.session
-          await SecureStore.setItemAsync('session',JSON.stringify(latestSession))
-          set({sessionData:latestSession, user:latestSession.user})
-        }else{
-          console.log('Existing session expired.')
-          await SecureStore.deleteItemAsync('session')
-          throw error
-        } 
+      } catch (error) {
+        console.log('Error checking for an initial session: ',error)
+      } finally {
+        console.log('Auth initialization complete')
+          set({ loading: false })
       }
-
-      supabase.auth.onAuthStateChange(async (event,session) => {
-        console.log('Auth state change detected: ', event)
-        if(session){
-          await SecureStore.setItemAsync('session',JSON.stringify(session))
-          set({sessionData:session, user:session.user})
-        }else{
-          set({loading:true})
-          console.log('Session not detected in state change response')
-          await SecureStore.deleteItemAsync('session')
-          set({sessionData:null,user:null, loading:false})
+    },
+    passwordSignIn: async(email,password) => {
+      try {
+        const {data, error} = await supabase.auth.signInWithPassword({
+          email,password
+        })
+        if(error) throw error
+        if(data.session){
+          set({sessionData:data.session,user: data.user})
+          await SecureStore.setItemAsync('session',JSON.stringify(data.session))
         }
-      })
-
-    } catch (error) {
-      console.log('Error checking for an initial session: ',error)
-    } finally {
-      console.log('Auth initialization complete')
-        set({ loading: false })
-    }
-  },
-  passwordSignIn: async(email,password) => {
-    try {
-      const {data, error} = await supabase.auth.signInWithPassword({
-        email,password
-      })
-      if(error) throw error
-      if(data.session){
-        set({sessionData:data.session,user: data.user})
-        await SecureStore.setItemAsync('session',JSON.stringify(data.session))
+      } catch (error) {
+        throw error
       }
-    } catch (error) {
-      await SecureStore.deleteItemAsync('session')
-      throw error
-    }
-  },
-  performOAuth: async() => {
+    },
+    performOAuth: async() => {
+      const createSessionFromUrl = async (url: string) => {
+        const { params, errorCode } = QueryParams.getQueryParams(url);
+        if (errorCode) {
+          console.log('Error in query params:', errorCode)
+          throw new Error(errorCode)
+        };
+        const { access_token, refresh_token } = params;
+        if (!access_token) {
+          console.log('No access token from createSessionFromURL.')
+          return
+        };
+        const { data, error } = await supabase.auth.setSession({
+          access_token,
+          refresh_token,
+        });
+        if (error) {
+          console.log('Error from supabase setSession:', error)  
+          throw error
+        };
+        return data.session;
+      };
 
-    const createSessionFromUrl = async (url: string) => {
-      const { params, errorCode } = QueryParams.getQueryParams(url);
-      if (errorCode) {
-        console.log('Error in query params:', errorCode)
-        throw new Error(errorCode)
-      };
-      const { access_token, refresh_token } = params;
-      if (!access_token) {
-        console.log('No access token from createSessionFromURL.')
-        return
-      };
-      const { data, error } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
+      const redirectTo = makeRedirectUri({path:'login'});
+    
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect:true,
+          queryParams: {
+            prompt: 'select_account'
+          },
+        },
       });
+
       if (error) {
-        console.log('Error from supabase setSession:', error)  
+        console.log('Error from signInWithOAuth:', error)
         throw error
       };
-      return data.session;
-    };
+      console.log("Opening browser...")
 
-    const redirectTo = makeRedirectUri({path:'login'});
-  
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        skipBrowserRedirect:true,
-        queryParams: {
-          prompt: 'select_account'
-        },
-      },
-    });
-
-    if (error) {
-      console.log('Error from signInWithOAuth:', error)
-      throw error
-    };
-    console.log("Opening browser...")
-
-    try{
-      const res = await WebBrowser.openAuthSessionAsync(
-        data.url ,
-        redirectTo
-      );
-      if (res.type === "success") {
-        const { url } = res;
-        const sessionData = await createSessionFromUrl(url);
-        if(sessionData) {
-          set({sessionData, user:sessionData.user})
-          await SecureStore.setItemAsync('session',JSON.stringify(sessionData))
+      try{
+        const res = await WebBrowser.openAuthSessionAsync(
+          data.url ,
+          redirectTo
+        );
+        if (res.type === "success") {
+          const { url } = res;
+          const sessionData = await createSessionFromUrl(url);
+          if(sessionData) {
+            set({sessionData, user:sessionData.user})
+            await SecureStore.setItemAsync('session', JSON.stringify(sessionData))
+          }
         }
+      }catch(e){
+        console.log('Error opening Auth session:',e)
       }
-    }catch(e){
-      console.log('Error opening Auth session:',e)
-    }
-  },
-  signUpWithEmail: async(email, password) => {
+    },
+    signUpWithEmail: async(email: string, password: string) => {
     try {
       const {data,error} = await supabase.auth.signUp({
         email,password
@@ -159,6 +166,7 @@ const useAuthStore = create<AuthState>()((set)=>({
       throw error
     }
   } 
-}))
+  }
+})
 
 export default useAuthStore
