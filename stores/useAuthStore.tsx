@@ -8,70 +8,78 @@ import * as QueryParams from "expo-auth-session/build/QueryParams";
 
 
 interface AuthState {
-  sessionData: Session | null,
-  setSession: (sessionObj: Session) => void,
+  // sessionData: Session | null,
+  // setSession: (sessionObj: Session) => void,
   user: User | null,
   setUser: (userData: User) => void,
-  clearSession: ()=> void,
+  // clearSession: ()=> void,
   clearUser: () => void,
   loading: boolean|null,
   initializeSession: () => Promise<void>,
   passwordSignIn: (email:string,password:string) => Promise<void>,
   performOAuth: () => Promise<void>,
-  signUpWithEmail: (email:string,password:string) => Promise<void>
+  signUpWithEmail: (email:string,password:string) => Promise<{user: User|null, session:Session|null}>
 }
 
 const useAuthStore = create<AuthState>()((set) => {
 
   return {
-    sessionData:null,
-    setSession: (sessionObj) => set({sessionData:sessionObj}),
+    // sessionData:null,
+    // setSession: (sessionObj) => set({sessionData:sessionObj}),
     user:null,
     loading:null,
     setUser: (userData) => set({user:userData}),
-    clearSession: () => set({sessionData:null}),
+    // clearSession: () => set({sessionData:null}),
     clearUser: () => set({user:null}),
     initializeSession: async() => {
       try {
         set({ loading: true })
-        const sessionExists = await SecureStore.getItemAsync('session')
-        if(sessionExists){
-          console.log('Existing session found.')
-          const currentSession:Session = JSON.parse(sessionExists)
-          const {data,error} = await supabase.auth.setSession({
-            access_token: currentSession.access_token,
-            refresh_token: currentSession.refresh_token
-          })
 
-          if(!error && data.session){
-            console.log('New session set.')
-            const latestSession = data.session
-            await SecureStore.setItemAsync('session',JSON.stringify(latestSession))
-            set({sessionData:latestSession, user:latestSession.user})
-          }else{
-            console.log('Existing session expired.')
-            await SecureStore.deleteItemAsync('session')
-            throw error
-          } 
-        }else{
-          const {data} = await supabase.auth.getSession()
-          if(data) {
-            console.log('No session data locally stored. Checked with \'getsession\': ',data)
-          }else{
-            console.log('No session found either locally or on the supabase auth server from \'getSession\'.')
-          }
+        // const sessionExists = await SecureStore.getItemAsync('session')
+        // if(sessionExists){
+        //   console.log('Existing session found.')
+        //   const currentSession:Session = JSON.parse(sessionExists)
+        //   const {data,error} = await supabase.auth.setSession({
+        //     access_token: currentSession.access_token,
+            // refresh_token: currentSession.refresh_token
+          // })
+
+
+          // if(!error && data.session){
+          //   console.log('New session set.')
+          //   const latestSession = data.session
+          //   await SecureStore.setItemAsync('session',JSON.stringify(latestSession))
+          //   set({sessionData:latestSession, user:latestSession.user})
+          // }else{
+          //   console.log('Existing session expired.')
+          //   await SecureStore.deleteItemAsync('session')
+          //   throw error
+          // } 
+        // }else{
+        //   const {data} = await supabase.auth.getSession()
+        //   if(data) {
+        //     console.log('No session data locally stored. Checked with \'getsession\': ',data)
+        //   }else{
+        //     console.log('No session found either locally or on the supabase auth server from \'getSession\'.')
+        //   }
+        // }
+
+        const { data, error } = await supabase.auth.getSession()
+        if(error) throw error
+        if(data.session) {
+          set({user:data.session.user})
         }
 
         supabase.auth.onAuthStateChange(async (event,session) => {
           console.log('Auth state change detected: ', event)
           if(session){
-            await SecureStore.setItemAsync('session',JSON.stringify(session))
-            set({sessionData:session, user:session.user})
+          //   await SecureStore.setItemAsync('session',JSON.stringify(session))
+            set({user:session.user})
           }else{
             set({loading:true})
-            console.log('Session not detected in state change response')
-            await SecureStore.deleteItemAsync('session')
-            set({sessionData:null,user:null, loading:false})
+            // console.log('Session not detected in state change response')
+            // await SecureStore.deleteItemAsync('session')
+            set({user:null, loading:false})
           }
         })
 
@@ -89,8 +97,8 @@ const useAuthStore = create<AuthState>()((set) => {
         })
         if(error) throw error
         if(data.session){
-          set({sessionData:data.session,user: data.user})
-          await SecureStore.setItemAsync('session',JSON.stringify(data.session))
+          set({user: data.user})
+          // await SecureStore.setItemAsync('session',JSON.stringify(data.session))
         }
       } catch (error) {
         throw error
@@ -143,14 +151,14 @@ const useAuthStore = create<AuthState>()((set) => {
           data.url ,
           redirectTo
         );
-        if (res.type === "success") {
-          const { url } = res;
-          const sessionData = await createSessionFromUrl(url);
-          if(sessionData) {
-            set({sessionData, user:sessionData.user})
-            await SecureStore.setItemAsync('session', JSON.stringify(sessionData))
-          }
-        }
+        // if (res.type === "success") {
+        //   const { url } = res;
+          // const sessionData = await createSessionFromUrl(url);
+          // if(sessionData) {
+          //   set({user:sessionData.user})
+          //   // await SecureStore.setItemAsync('session', JSON.stringify(sessionData))
+          // }
+        // }
       }catch(e){
         console.log('Error opening Auth session:',e)
       }
@@ -162,6 +170,7 @@ const useAuthStore = create<AuthState>()((set) => {
       })
       console.log('Data recieved from user sign up:', data)
       if (error) throw error
+      return data
     } catch (error) {
       throw error
     }

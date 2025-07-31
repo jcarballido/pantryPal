@@ -19,7 +19,10 @@ export default function login() {
 
   const handleSignUpWithEmail = async() => {
     try {
-      await signUpWithEmail(emailValue,passwordValue)
+      const data = await signUpWithEmail(emailValue,passwordValue)
+      if(data.user){
+        router.replace('/(auth)/confirmation')
+      }
     } catch (error) {
       console.log('Error signing up new user:', error)
     }

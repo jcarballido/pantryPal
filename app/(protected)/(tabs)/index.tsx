@@ -18,7 +18,7 @@ WebBrowser.maybeCompleteAuthSession(); // required for web only
 
 export default function index() {
 
-  const {sessionData, user, setSession, setUser, clearSession, clearUser} = useAuthStore() 
+  const {user,setUser, clearUser} = useAuthStore() 
   
 
   console.log('Landed on index')

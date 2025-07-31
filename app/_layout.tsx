@@ -10,7 +10,11 @@ export default function RootLayout() {
   const { user, loading,initializeSession } = useAuthStore()
 
   useEffect(() => {
-    initializeSession()
+    try{
+      initializeSession()
+    }catch(e){
+      console.log('Error initializing session:', e)
+    }
   },[])
 
   console.log('User from auth store in _layout:', user)
