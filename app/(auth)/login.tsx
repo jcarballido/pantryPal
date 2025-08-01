@@ -35,9 +35,9 @@ export default function login() {
     router.push('./signUp')
   }
 
-  if(user){
-    return <Redirect href='/(protected)/(tabs)' />
-  }
+  // if(user){
+  //   return <Redirect href='/(protected)/(tabs)' />
+  // }
 
   return (
     <View className='flex flex-col gap-2 grow items-center bg-white'>

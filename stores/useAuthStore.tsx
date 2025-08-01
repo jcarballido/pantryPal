@@ -96,6 +96,7 @@ const useAuthStore = create<AuthState>()((set) => {
           email,password
         })
         if(error) throw error
+        if(!data.session) throw new Error('No session returned')
         if(data.session){
           set({user: data.user})
           // await SecureStore.setItemAsync('session',JSON.stringify(data.session))
@@ -151,14 +152,14 @@ const useAuthStore = create<AuthState>()((set) => {
           data.url ,
           redirectTo
         );
-        // if (res.type === "success") {
-        //   const { url } = res;
-          // const sessionData = await createSessionFromUrl(url);
-          // if(sessionData) {
-          //   set({user:sessionData.user})
-          //   // await SecureStore.setItemAsync('session', JSON.stringify(sessionData))
-          // }
-        // }
+        if (res.type === "success") {
+          const { url } = res;
+          const sessionData = await createSessionFromUrl(url);
+          if(sessionData) {
+            set({user:sessionData.user})
+            // await SecureStore.setItemAsync('session', JSON.stringify(sessionData))
+          }
+        }
       }catch(e){
         console.log('Error opening Auth session:',e)
       }

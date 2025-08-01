@@ -18,15 +18,7 @@ WebBrowser.maybeCompleteAuthSession(); // required for web only
 
 export default function index() {
 
-  const {user,setUser, clearUser} = useAuthStore() 
-  
-
-  console.log('Landed on index')
-  // console.log('Session data in  index: ', sessionData)
-  console.log('User in index ', user)
-
-  const loggedIn = false
-
+  const {user} = useAuthStore() 
   
   const { allStoredItems, setStoredItems, deleteStoredItems,savedCategories, setSavedCategories, setReservedCategories } = useItemStore()
   
@@ -186,11 +178,7 @@ export default function index() {
     const userVersion = await db.getFirstAsync<{user_version: number}>('PRAGMA user_version')
     console.log('User version after reset: ', userVersion)
   }
-  
-  // if(!user){
-  //   console.log('loggedIn = false, being routed to sign up page')
-  //   return <Redirect href='/(auth)/signUp' />
-  // }
+
   return (
     <View className='flex-1 flex-col bg-primary-base max-w-screen' >
       <StatusBar barStyle='dark-content' />

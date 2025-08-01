@@ -17,16 +17,6 @@ export default function RootLayout() {
     }
   },[])
 
-  console.log('User from auth store in _layout:', user)
-
-  // if (loading) return (
-  //   <View>
-  //     <Text>
-  //       Loading
-  //     </Text>
-  //   </View>
-  // )
-
   return (
     <Stack>
       <Stack.Protected guard={!!user}>

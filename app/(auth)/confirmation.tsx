@@ -8,7 +8,11 @@ const Confirmation = () => {
       <Text>Confirmation email sent!</Text>
       <Text>
         Click here to go back to 
-        <Pressable onPress={() => router.replace('/(auth)/login')}>
+        <Pressable onPress={() => {
+          router.replace('/(auth)/login')
+          router.dismissAll()
+          }} 
+        >
           <Text>LOGIN</Text>
         </Pressable>
       </Text>
